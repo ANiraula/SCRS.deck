@@ -1,6 +1,6 @@
 ---
-title: "SCRS Solvency Analysis"
-author: "Prepared by: Anil, Swaroop, Jen & Jordan"
+title: "South Carolina Retirement System Solvency Analysis"
+author: "Prepared by:Pension Integrity Project at Reason Foundation. 2022—Preliminary Draft"
 date: "07/14/2021"
 output:
   powerpoint_presentation:
@@ -25,6 +25,8 @@ knitr::opts_chunk$set(
   
   
 )
+
+year <- 2021
 #Update linePlot() for Treasury functionality
 #Update linePlot() for shaded UAL area/line plot
 #Create glPlot() w/ function to turn "interactive" parameter TRUE/FALSE to create Plotly graph (eventually use database data)
@@ -66,7 +68,7 @@ We offer pro-bono technical assistance to public officials to help them design a
 
     </p>
 
-### SCRS Unfunded Liabilities (2001-2021) w/ R (areaPlot())
+### SCRS Unfunded Liabilities (2001-`r year`) w/ R (areaPlot())
 
 ```{r debt, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of SCRS actuarial valuation reports.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
 
@@ -120,6 +122,7 @@ Data$ava[21] <- Data$aal[21] - Data$unfunded_actuarially_accrued_liabilities_dol
 
 areaPlot <- function(data, title = NULL, caption = FALSE, grid = FALSE, 
                      yaxisScale = 1e-06, 
+                     maxYear = 2021,
                      labelY = "Unfunded Accrued Actuarial Liabilities (Millions)",
                      ticks = TRUE, sp500 = FALSE, font) 
 {
@@ -139,13 +142,14 @@ areaPlot <- function(data, title = NULL, caption = FALSE, grid = FALSE,
     urlfile2 = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/S%26P500.csv"
     SP500 <- read_csv(url(urlfile2), col_names = TRUE, na = c(""), 
       skip_empty_rows = TRUE, col_types = NULL)
-    SP500 <- SP500 %>% filter(year >= min(data$year))
+    SP500 <- SP500 %>% filter(year >= min(data$year) & year < (maxYear+1))
     data <- cbind(data, SP500[, 2])
     graph <- data.frame(data %>% select(year, SP500 = sp_500, 
       funded_ratio) %>% tidyr::drop_na())
   }
   else {
     data <- as.data.table(data)
+    data <- data %>% filter(year < (maxYear+1))
     data$uaal <- (data$aal - data$ava)
     data <- data %>% dplyr::filter(data$uaal != 0)
     extrapo <- stats::approx(data$year, data$uaal, n = 10000)
@@ -237,7 +241,7 @@ areaPlot <- function(data, title = NULL, caption = FALSE, grid = FALSE,
     coord_cartesian(expand = FALSE, xlim = c(min(graph$year), 
       max(graph$year)), ylim = c(y_minimum, y_maximum * 
       1.2)) + ggplot2::scale_x_continuous(breaks = round(seq(min(graph$year), 
-    max(graph$year), by = 2), 1), expand = c(0, 0)) + ggplot2::theme(legend.position = "none") + 
+    maxYear, by = 2), 1), expand = c(0, 0)) + ggplot2::theme(legend.position = "none") + 
     ggplot2::theme(text = element_text(family = paste(font), 
       size = 9)) + ggplot2::theme(panel.grid.major.y = element_line(colour = ifelse(isTRUE(grid),
     paste(palette_reason$SpaceGrey), "white"), size = (1)))+ plotTheme 
