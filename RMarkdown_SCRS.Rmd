@@ -521,7 +521,7 @@ area.ual <- ualPlot(Data, title = NULL, caption = FALSE, grid = FALSE,
 area.ual
 ```
 
-### Causes of Pension Debt (2002-2020) w/ R (custom Plotly-Image)
+### Causes of Pension Debt (2002-2021) w/ R (custom Plotly-Image)
 
 ```{r, dpi=400, echo = FALSE, caption = "Source: Pension Integrity Project analysis of SCRS actuarial valuation reports.",fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
      ########## Arkansas PERS Dashboard ##########
@@ -559,144 +559,145 @@ library(png)
 
 ###### glPlot() Function #####
 
-glPlot <- function(database = FALSE, data = NULL,
-      url = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/SCRS_GL.csv", 
-      interactive = TRUE, 
-      fileName = "GainLoss.png",
-      title = "<b>Causes of Arkansas ERS Pension Debt (2001-2019)<b>",
-      caption = FALSE,
-      yaxisScale = 1e-06,
-      yaxisMax = 4.5,
-      yaxisTick = 0.5,
-      lab1 = "Investment<br>Returns", 
-      lab2 = "Changes to<br>Actuarial<br>Methods &<br>Assumptions", 
-      lab3 = "Negative<br>Amortization",
-      lab4 = "Deviations from<br>Demographic<br>Assumptions",
-      lab5 = "COLA<br>Given",
-      lab6 = "Gains From<br>Pay<br>Increases<br>Not Given",
-      lab7 = NULL,
-      lab8 = NULL,
-      lab9 = NULL){
-  
-  #[1] Load Gain/Loss data from the provided url
-  if(!isTRUE(database)){
-  urlfile=url
-  data <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
-
-  data <- as.data.table(data)# convert to data.table
-   data <-  data %>%
-    replace(is.na(.), 0)
-   
-    ## Draft for New Gain/Loss bar chart
-    #data2 <- data
-    #for(i in (2:data[,.N])){
-    #data2[i,2: length(data)] <- data2[i,2: length(data)]+data2[(i-1),2: length(data)]
-    #}
-    #
-
-  #[2] Calculate Total Gain/Loss for each column (i.e. Net Change to UAL over the years)
-    y = data[,lapply(.SD,sum),.SDcols=colnames(data)]*yaxisScale
-    y = y[,!1]# sum values by each column
-    y = t(y)#Saving needed columns and transposing table for graphics
-}
-  #[3] Combine gain/loss data & categories to create interactive Waterfall chart w/ plotly
-  #  x = list(lab1, lab2, lab3, lab4, lab5, lab6, lab7,  lab8,  lab9)
-    
-     x = list(lab1, lab2, lab3, if (!is_null(lab4)) {
-    paste(lab4)
-  }, if (!is_null(lab5)) {
-    paste(lab5)
-  }, if (!is_null(lab6)) {
-    paste(lab6)
-  }, if (!is_null(lab7)) {
-    paste(lab7)
-  }, if (!is_null(lab8)) {
-    paste(lab8)
-  }, if (!is_null(lab9)) {
-    paste(lab9)
-  }else{NULL})
-  
-    num <- sum(
-      sum(is.null(x[[6]]))+sum(is.null(x[[7]]))+sum(is.null(x[[8]]))+sum(is.null(x[[9]]))
-      )
-    
-    if(num >0){ x <- x[1:(9-num)]}
-  
- data <- data.frame(x = factor(x, levels = x), y)
- data <- data %>% dplyr::mutate(measure = dplyr::case_when(.data$y > 
-    0 ~ "relative", .data$y < 0 ~ "negative"))
-    
-    data[length(data[,3]),]$measure <- "total"
-
-    #  m <- list(
-    #  l = 50,
-    #  r = 0,
-    #  b = 0,
-    #  t = 50,
-    #  pad = 4
-    #  )
-
-    #[4] Visualizing with Plotly
-    
-    fig <- plot_ly( data,
-                    type = "waterfall",
-                    measure = ~measure,
-                    x = ~x,
-                    textposition = "outside",
-                    y= ~y,
-                    decreasing = list(marker = list(color = palette_reason$Green)),
-                    increasing = list(marker = list(color = palette_reason$Red)),
-                    totals = list(marker = list(color = palette_reason$Orange)),
-                    connector = list(line = list(color= palette_reason$SpaceGrey, width = 1))) 
-    
-    fig <- fig %>%
-      layout(title = paste0(title),
-             xaxis = list(title = "",tickfont = list(size = 11, face = "bold")),
-             yaxis = list(title = "<b>Change in Unfunded Liability (in $Billions)<b>",
-                          titlefont = list(size = 12), range = c(0,yaxisMax),
-                          showgrid = FALSE,
-                          tick0 = 0,
-                          dtick = yaxisTick,
-                          ticklen = 2,
-                          linecolor = '#636363',
-                          linewidth = 0.45),
-             barmode = 'stack',
-             autosize = F,
-             showlegend = F)
-      
-      #ADD caption
-      if(isTRUE(caption)){
-      fig <- fig %>% 
-                   layout(annotations = list(yref = 'paper', xref = "x", showarrow = F, 
-                    y = 0, x = 5, text = "reason.org/pensions",
-                    xanchor='right', yanchor='auto', xshift=0, yshift=0,
-                    font=list(size=10, color="black")))}
-    
-    #`Save` as a `static` png file 
-    #OR `show` as a `interactive` Plotly chart
-    #if(!isTRUE(interactive)){
-    #Save Plotly as a Static PNG on a local computer (to reference in rmarkdown later)
-    #https://github.com/plotly/orca
-   # orca(fig, paste0(fileName), width =  7 * 300, height = 4 * 300)}else{fig}
-     if(!isTRUE(interactive)){
-    #Save Plotly as a Static PNG on a local computer (to reference in rmarkdown later)
-    #https://github.com/plotly/orca
-    orca(fig, paste0(fileName), width = 780, height = 530)}else{fig}
-}
-
-#Code to save Static/Interactive graph
-### South Carolina SCRS Data ###
-# glPlot(database = FALSE, data = NULL,
+# glPlot <- function(database = FALSE, data = NULL,
 #       url = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/SCRS_GL.csv", 
 #       interactive = TRUE, 
 #       fileName = "GainLoss.png",
-#       title = "<b>Causes of Arkansas ERS Pension Debt (2002-2020)<b>",
+#       title = "<b>Causes of Arkansas ERS Pension Debt (2001-2019)<b>",
+#       caption = FALSE,
+#       yaxisScale = 1e-06,
+#       yaxisMax = 4.5,
+#       yaxisTick = 0.5,
+#       lab1 = "Investment<br>Returns", 
+#       lab2 = "Changes to<br>Actuarial<br>Methods &<br>Assumptions", 
+#       lab3 = "Negative<br>Amortization",
+#       lab4 = "Deviations from<br>Demographic<br>Assumptions",
+#       lab5 = "COLA<br>Given",
+#       lab6 = "Gains From<br>Pay<br>Increases<br>Not Given",
+#       lab7 = NULL,
+#       lab8 = NULL,
+#       lab9 = NULL){
+#   
+#   #[1] Load Gain/Loss data from the provided url
+#   if(!isTRUE(database)){
+#   urlfile=url
+#   data <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
+# 
+#   data <- as.data.table(data)# convert to data.table
+#    data <-  data %>%
+#     replace(is.na(.), 0)
+#    
+#     ## Draft for New Gain/Loss bar chart
+#     #data2 <- data
+#     #for(i in (2:data[,.N])){
+#     #data2[i,2: length(data)] <- data2[i,2: length(data)]+data2[(i-1),2: length(data)]
+#     #}
+#     #
+# 
+# 
+#   #[2] Calculate Total Gain/Loss for each column (i.e. Net Change to UAL over the years)
+#     y = data[,lapply(.SD,sum),.SDcols=colnames(data)]*yaxisScale
+#     y = y[,!1]# sum values by each column
+#     y = t(y)#Saving needed columns and transposing table for graphics
+# }
+#   #[3] Combine gain/loss data & categories to create interactive Waterfall chart w/ plotly
+#   #  x = list(lab1, lab2, lab3, lab4, lab5, lab6, lab7,  lab8,  lab9)
+#     
+#      x = list(lab1, lab2, lab3, if (!is_null(lab4)) {
+#     paste(lab4)
+#   }, if (!is_null(lab5)) {
+#     paste(lab5)
+#   }, if (!is_null(lab6)) {
+#     paste(lab6)
+#   }, if (!is_null(lab7)) {
+#     paste(lab7)
+#   }, if (!is_null(lab8)) {
+#     paste(lab8)
+#   }, if (!is_null(lab9)) {
+#     paste(lab9)
+#   }else{NULL})
+#   
+#     num <- sum(
+#       sum(is.null(x[[6]]))+sum(is.null(x[[7]]))+sum(is.null(x[[8]]))+sum(is.null(x[[9]]))
+#       )
+#     
+#     if(num >0){ x <- x[1:(9-num)]}
+#   
+#  data <- data.frame(x = factor(x, levels = x), y)
+#  data <- data %>% dplyr::mutate(measure = dplyr::case_when(.data$y > 
+#     0 ~ "relative", .data$y < 0 ~ "negative"))
+#     
+#     data[length(data[,3]),]$measure <- "total"
+# 
+#     #  m <- list(
+#     #  l = 50,
+#     #  r = 0,
+#     #  b = 0,
+#     #  t = 50,
+#     #  pad = 4
+#     #  )
+# 
+#     #[4] Visualizing with Plotly
+#     
+#     fig <- plot_ly( data,
+#                     type = "waterfall",
+#                     measure = ~measure,
+#                     x = ~x,
+#                     textposition = "outside",
+#                     y= ~y,
+#                     decreasing = list(marker = list(color = palette_reason$Green)),
+#                     increasing = list(marker = list(color = palette_reason$Red)),
+#                     totals = list(marker = list(color = palette_reason$Orange)),
+#                     connector = list(line = list(color= palette_reason$SpaceGrey, width = 1))) 
+#     
+#     fig <- fig %>%
+#       layout(title = paste0(title),
+#              xaxis = list(title = "",tickfont = list(size = 11, face = "bold")),
+#              yaxis = list(title = "<b>Change in Unfunded Liability (in $Billions)<b>",
+#                           titlefont = list(size = 12), range = c(0,yaxisMax),
+#                           showgrid = FALSE,
+#                           tick0 = 0,
+#                           dtick = yaxisTick,
+#                           ticklen = 2,
+#                           linecolor = '#636363',
+#                           linewidth = 0.45),
+#              barmode = 'stack',
+#              autosize = F,
+#              showlegend = F)
+#       
+#       #ADD caption
+#       if(isTRUE(caption)){
+#       fig <- fig %>% 
+#                    layout(annotations = list(yref = 'paper', xref = "x", showarrow = F, 
+#                     y = 0, x = 5, text = "reason.org/pensions",
+#                     xanchor='right', yanchor='auto', xshift=0, yshift=0,
+#                     font=list(size=10, color="black")))}
+#     
+#     #`Save` as a `static` png file 
+#     #OR `show` as a `interactive` Plotly chart
+#     #if(!isTRUE(interactive)){
+#     #Save Plotly as a Static PNG on a local computer (to reference in rmarkdown later)
+#     #https://github.com/plotly/orca
+#    # orca(fig, paste0(fileName), width =  7 * 300, height = 4 * 300)}else{fig}
+#      if(!isTRUE(interactive)){
+#     #Save Plotly as a Static PNG on a local computer (to reference in rmarkdown later)
+#     #https://github.com/plotly/orca
+#     orca(fig, paste0(fileName), width = 780, height = 530)}else{fig}
+# }
+# 
+# #Code to save Static/Interactive graph
+# ### South Carolina SCRS Data ###
+# glPlot(database = FALSE, data = NULL,
+#       url = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/SCRS_GL.csv",
+#       interactive = FALSE,
+#       fileName = "SCRS_GainLoss.pdf",
+#       title = "",
 #       caption = FALSE,
 #       yaxisScale = 1e-03,
-#       yaxisMax = 30, 
+#       yaxisMax = 30,
 #       yaxisTick = 3,
-#       lab1 = "<b>Investment<br>Returns<b>", 
-#       lab2 = "<b>Changes to<br>Actuarial<br>Methods &<br>Assumptions<b>", 
+#       lab1 = "<b>Investment<br>Returns<b>",
+#       lab2 = "<b>Changes to<br>Actuarial<br>Methods &<br>Assumptions<b>",
 #       lab3 = "<b>Negative<br>Amortization<b>",
 #       lab4 = "<b>Deviations from<br>Demographic<br>Assumptions<b>",
 #       lab5 = "<b>COLA<br>Given<b>",
@@ -722,7 +723,7 @@ glPlot <- function(database = FALSE, data = NULL,
 #fig
 ```
 
-![](SCRS_GainLoss.png)
+![](SCRS_GainLoss.pdf)
 
 ### Compound Net Change to UAL w/ R (barPlot())
 
