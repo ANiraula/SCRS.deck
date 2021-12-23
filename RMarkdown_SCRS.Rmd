@@ -718,7 +718,7 @@ glPlot <- function(database = FALSE, data = NULL,
 #fig
 ```
 
-![](SCRS_GainLoss.pdf)
+![](SCRS_GainLoss.png)
 
 ### Compound Net Change to UAL w/ R (barPlot())
 
@@ -3731,6 +3731,25 @@ payroll
 
 ```{r inflation, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of SCRS actuarial valuation reports.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
 
+rm(list=ls())
+###Load/install packages
+#R.Version()
+#https://github.com/ReasonFoundation/pensionviewr
+#Create token -> usethis::edit_r_environ() -> restart -> Sys.getenv("GITHUB_PAT")
+#install.packages('devtools')
+#library(devtools)
+#devtools::install_github("ReasonFoundation/reasontheme",force = TRUE)
+#devtools::install_github("ReasonFoundation/pensionviewr", force = TRUE)
+library(reasontheme)
+library(pensionviewr)
+library(ggplot2)
+library(tidyverse)
+library(tseries)
+library(data.table)
+library(readr)
+library(rsconnect)
+library(dplyr)
+library(plyr)
 pl <- planList()
 
 #PULL DATA
@@ -3739,9 +3758,9 @@ pl <- planList()
 Data <- pullStateData(2001)
 Data <- filterData(Data, 2001)
 
-Data<- Data %>% filter (plan_name == "South Carolina Retirement Systems") %>% filter(!duplicated(year))
+Data<- Data %>% filter(plan_name == "South Carolina Retirement Systems") %>% filter(!duplicated(year))
 Data$year <- as.numeric(Data$year)
-Data <- data.table(Data)
+Data <- data.frame(Data)
 
 #### Load & Merge CPI data (by region)
 library(readxl)
@@ -3769,11 +3788,14 @@ library(httr)
       
       ### Merge State -> Regions
       Data <- Data %>% left_join(regions, by = "state")
+      Data <-  Data %>% mutate(region = region.x) %>%
+        select(-region.y, -region.x)
+        
       ### Merge Regions -> CPI
       
       Data <-  Data %>% left_join(cpi, by = c("year", "region"))
       Data <-  Data %>% select(-cpi)
-      #View(Data) 
+      #View(Data$region.) 
       #filter for PERSI
       
 urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/ppd-data-latest_Q1_2021.csv"
@@ -3799,7 +3821,8 @@ Data$inflation_assum[1:20] <-
 Data$inflation_assum[20:21] <- 0.0225
 
 Data$inflation_assum <- as.numeric(Data$inflation_assum)
-
+Data <-  Data %>% mutate(cpi.change = cpi.change.x) %>%
+        select(-cpi.change.y, -cpi.change.x)
 Data <- Data %>% select(year, inflation_assum, cpi.change)
 colnames(Data)[3] <- "payroll_growth_assumption"
 Data <- data.table(Data)
