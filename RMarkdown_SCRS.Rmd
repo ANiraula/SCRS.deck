@@ -257,6 +257,7 @@ debt <-
     title = "",
     yaxisScale = 1e-09, 
     labelY = "Unfunded Accrued Actuarial Liabilities (Billions)",
+    maxYear = 2021,
     caption = FALSE,
     font = "Calibri",
     grid = F,
