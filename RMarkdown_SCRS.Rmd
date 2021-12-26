@@ -3271,17 +3271,17 @@ barPlot <- function (data = NULL, net.amo = FALSE, contributions = FALSE,
       0.8)) + plotTheme 
   }
   else if (isTRUE(contributions)) {
-    reason.data <- reason.data %>% select(year, actuarially_required_contribution_dollar, 
-      actuarially_required_contribution_paid_percentage, 
-      employer_contribution_regular_dollar)
-    reason.data <- reason.data %>% transmute(year = year, 
-      adec = actuarially_required_contribution_dollar, 
-      adec_paid = actuarially_required_contribution_dollar * 
-        actuarially_required_contribution_paid_percentage, 
-      adec_unpaid = actuarially_required_contribution_dollar - 
-        (actuarially_required_contribution_dollar * 
-          actuarially_required_contribution_paid_percentage))
+   
+    reason.data <- Data %>% transmute(year = year, 
+      adec = arc_adec_dollar, 
+      adec_paid = statutory,
+      adec_unpaid = (adec - adec_paid))
+ 
+reason.data[1:3,3:4] <-  reason.data[1:3,2]
+ 
     reason.data <- data.frame(reason.data)
+   
+    
     graph <- ggplot(reason.data) + 
       
       geom_col(aes(x = year, 
@@ -3310,8 +3310,8 @@ barPlot <- function (data = NULL, net.amo = FALSE, contributions = FALSE,
       ggplot2::theme(axis.ticks.x = element_line(size = 0.5, 
         color = "black")) + ggplot2::theme(axis.ticks.y = element_line(size = 0.5, 
       color = "black")) + scale_x_continuous(labels = function(x) paste0(x, 
-      ""), name = "", breaks = seq(2001, 2020, by = 2), 
-      limits = c(2000, 2021), expand = c(0, 0)) + theme_bw() + theme(axis.line = element_line(), panel.grid.major = element_blank(), 
+      ""), name = "", breaks = seq(2001, 2022, by = 2), 
+      limits = c(2000, 2022), expand = c(0, 0)) + theme_bw() + theme(axis.line = element_line(), panel.grid.major = element_blank(), 
       panel.grid.minor = element_blank(), panel.border = element_blank(), 
       panel.background = element_blank()) + theme(legend.position = c(0.25, 
       0.8))+ plotTheme 
@@ -3447,6 +3447,7 @@ library(purrr)
 library(rpart)
 library(vip)
 
+
 #View(pl <- planList())
 #x <- pullStateData(2001)
 #view <- masterView("Reason", TRUE)
@@ -3475,19 +3476,37 @@ reason.data <- pullData(pl, "South Carolina Retirement Systems") %>% filter(year
 #View(reason.data)
 #### Create a list of all Gain/Loss columns we have ####
 
+
+
 reason.data <- data.table(reason.data)
+
+reason.data <- reason.data %>% select(year, display_name, state, adec1 = actuarially_determined_contribution_dollar,
+                          adec2 =   actuarially_required_contribution_paid_dollar,  #actuarially_required_contribution_dollar (PPD)
+                          adec_paid_pct = actuarially_required_contribution_paid_percentage,
+                          adec_pct = adec_as_a_percent_of_payroll, #instead of employers_projected_actuarial_required_contribution
+                          arc_paid_dollar = actuarially_required_contribution_paid_dollar, #NEW
+                          adec_paid_dollar = actuarially_determined_contribution_paid_dollar,#NEW
+                          statutory = statutory_payment_dollar, statutory_pct = statutory_payment_percentage)
+
+Data <- reason.data
+Data$arc_adec_dollar <- ifelse(is.na(Data$adec1) == TRUE,Data$adec2, Data$adec1)
+Data$arc_adec_paid_dollar <- ifelse(is.na(Data$arc_paid_dollar) == TRUE, Data$adec_paid_dollar, Data$arc_paid_dollar)
+
+Data <- data.table(Data)
 #reason.data <- reason.data[,lapply(.SD,function(x){ifelse(is.na(x),0,x)})]
 #View(reason.data)
 ## Make sure all column numbers are numeric
-reason.data[,4:(length(reason.data)-1)] <- data.table(reason.data[,4:(length(reason.data)-1)]) %>% dplyr::mutate_all(as.numeric)
-reason.data$year <- as.numeric(reason.data$year)
+#View(Data)
+Data[,4:(length(Data)-1)] <- data.table(Data[,4:(length(Data)-1)]) %>% dplyr::mutate_all(as.numeric)
+Data$year <- as.numeric(Data$year)
+
 
 # reason.data$employer_contribution_regular_dollar <- 0
 #        reason.data[year > 2000]$employer_contribution_regular_dollar <-
 #          PPD[PlanName == "Oklahoma PERS" & fy > 2000]$contrib_ER_regular
 
 contributions <- barPlot(
-  data = reason.data, 
+  data = Data, 
   net.amo = FALSE, 
   contributions = TRUE, 
   compound.gl = FALSE,
