@@ -3177,7 +3177,7 @@ net.amo
 #ggsave(filesave)
 ```
 
-### ADEC Contribution History (2001-2020) w/ R (barPlot())
+### ADEC Contribution History (2001-2021) w/ R (barPlot())
 
 ```{r contributions, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of SCRS actuarial valuation reports.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
 
