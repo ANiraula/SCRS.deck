@@ -522,7 +522,7 @@ area.ual <- ualPlot(Data, title = NULL, caption = FALSE, grid = FALSE,
 area.ual
 ```
 
-### Causes of Pension Debt (2002-2021) w/ R (custom Plotly-Image)
+### Causes of Pension Debt (2001-2021) w/ R (custom Plotly-Image)
 
 ```{r, dpi=400, echo = FALSE, caption = "Source: Pension Integrity Project analysis of SCRS actuarial valuation reports.",fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
      ########## Arkansas PERS Dashboard ##########
@@ -683,7 +683,7 @@ library(png)
 #      if(!isTRUE(interactive)){
 #     #Save Plotly as a Static PNG on a local computer (to reference in rmarkdown later)
 #     #https://github.com/plotly/orca
-#     orca(fig, paste0(fileName), width = 780, height = 530)}else{fig}
+#     orca(fig, paste0(fileName), width = 820, height = 530)}else{fig}
 # }
 # 
 # #Code to save Static/Interactive graph
