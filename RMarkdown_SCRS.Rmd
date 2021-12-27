@@ -2872,20 +2872,29 @@ barPlot <- function (data = NULL, net.amo = FALSE, contributions = FALSE,
       reason.data$total_amortization_payment_percentage * 
         reason.data$payroll2
     }
-    reason.data$net.amo <- as.numeric(reason.data$amo.payments - 
+    
+    
+    reason.data$net.amo <- -(reason.data$amo.payments+
       reason.data$interest_on_debt_dollar)
+    
+
     reason.data <- data.table(reason.data %>% select(year, 
       interest_on_debt_dollar, amo.payments, net.amo))
     # reason.data$over <- ifelse(reason.data$net.amo > 0, 
     #   reason.data$net.amo, NA)
     # reason.data$net.amo <- ifelse(reason.data$net.amo < 
     #   0, reason.data$net.amo, NA)
+    reason.data$amo.payments <- -(reason.data$amo.payments)
     reason.data <- data.table(reason.data)
+
     colnames(reason.data) <- c("year", "Interest Accrued on Unfunded Liabilities", 
-      "Unfunded Liability Payments", "Net Amo.")
-    reason.data <- melt(reason.data, vars = "net.amo")
-    reason.data <- data.frame(reason.data[21:100, ])
-    x <- data.table(seq(2001, 2020, by = 1))
+      "Contributions Towards Unfunded Liabilities", "Net Amortization: Contributions Above/Below Interest on Unfunded Liabilities")
+    
+    reason.data <- melt(reason.data, vars = "Net Amortization: Contributions Above/Below Interest on Unfunded Liabilities")
+    
+    reason.data <- data.frame(reason.data[22:84, ])
+
+    x <- data.table(seq(2001, 2021, by = 1))
     x <- rbind(x, x, x)
     reason.data <- cbind(x, reason.data)
     reason.data <- data.frame(reason.data)
@@ -2902,15 +2911,15 @@ barPlot <- function (data = NULL, net.amo = FALSE, contributions = FALSE,
     }, breaks = seq(Ymin, Ymax, by = Ybreak), limits = c(Ymin, 
       Ymax), expand = c(0, 0)) + ggplot2::geom_hline(yintercept = 0, 
       color = "black") + scale_fill_manual(values = c(palette_reason$SatBlue, 
-      palette_reason$SpaceGrey, palette_reason$Red, palette_reason$Green)) + 
+      palette_reason$Orange, palette_reason$LightBlue, palette_reason$Green)) + 
       ggplot2::theme(axis.ticks.x = element_line(size = 0.5, 
         color = "black")) + ggplot2::theme(axis.ticks.y = element_line(size = 0.5, 
       color = "black")) + scale_x_continuous(labels = function(x) paste0(x, 
-      ""), name = "", breaks = seq(2001, 2021, by = 2), 
-      limits = c(2001, 2021), expand = c(0, 0)) + theme_bw() + theme(axis.line = element_line(), panel.grid.major = element_blank(), 
+      ""), name = "", breaks = seq(2001, 2022, by = 2), 
+      limits = c(2001, 2022), expand = c(0, 0)) + theme_bw() + theme(axis.line = element_line(), panel.grid.major = element_blank(), 
       panel.grid.minor = element_blank(), panel.border = element_blank(), 
-      panel.background = element_blank()) + theme(legend.position = c(0.25, 
-      0.8)) + plotTheme 
+      panel.background = element_blank()) + theme(legend.position = c(0.45, 
+      0.9)) + plotTheme 
   }
   else if (isTRUE(contributions)) {
     reason.data <- reason.data %>% select(year, actuarially_required_contribution_dollar, 
@@ -3113,7 +3122,9 @@ library(vip)
 
 #Pull plan-specific data from the database
 pl <- planList()
-reason.data <- pullData(pl, "Idaho Public Employee Retirement System") %>% filter(year > 2000 & !duplicated(year))# (2002-2020)
+reason.data <- pullData(pl, "South Carolina Retirement Systems") %>% filter(year > 2000 & !duplicated(year))
+#View(reason.data)
+#(2002-2020)
 
 #reason.data <- pullData(pl, "Louisiana State Employees Retirement System")# (2002-2019)
 #reason.data <- pullData(pl, "New Mexico Public Employees Retirement Association")# (2002-2019)
@@ -3129,21 +3140,27 @@ reason.data <- data.table(reason.data)
 ## Make sure all column numbers are numeric
 reason.data[,4:(length(reason.data)-1)] <- data.table(reason.data[,4:(length(reason.data)-1)]) %>% dplyr::mutate_all(as.numeric)
 reason.data$year <- as.numeric(reason.data$year)
-#View(reason.data)
+reason.data$contribution_rate_effective_fy[1:3] <- 2003:2005
+reason.data$fiscal_year_of_contribution <- reason.data$contribution_rate_effective_fy
 
 #### Add Net Amortization ####
 #(Interest on Debt + Amortization Payments)
 #Code alternative way>> 
 #Amo. contribution % * Future Payroll
+# View(reason.data$interest_on_debt_dollar)
+# View(reason.data$amortization_payment_total_amount)
 
 ####### Estimate Future Payroll
 future.payroll <- reason.data[year >= fiscal_year_of_contribution[1]]$covered_payroll_dollar
 future.payroll <- t(cbind(t(future.payroll),reason.data[year == 2020]$covered_payroll_dollar*(1+0.03)))#Use assumed payroll growth rate
+future.payroll <- t(cbind(t(future.payroll),reason.data[year == 2021]$covered_payroll_dollar*(1+0.03)))#Use assumed payroll growth rate
 reason.data$payroll2 <- future.payroll
 
 ### Calculating Total Normal Cost $ amount
 reason.data$total_nc <-
 reason.data$total_normal_cost_percentage * reason.data$covered_payroll_dollar
+
+reason.data <- reason.data %>% replace(is.na(.), 0)
 
 ### Net Amo
 net.amo <- barPlot(
@@ -3155,9 +3172,9 @@ net.amo <- barPlot(
   str = 25,
   stochastic = FALSE, 
   stochastic.url = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/perctest2.csv",
-  Ymax = 300000000,
-  Ymin = -200000000,
-  Ybreak = 100000000,
+  Ymax = 2000000000,
+  Ymin = -500000000,
+  Ybreak = 250000000,
   yaxisScale = 1000000, 
   interactive = FALSE,
   lab1 = "Investment Experience", 
@@ -3171,6 +3188,7 @@ net.amo <- barPlot(
   lab9 = NULL)
 
 net.amo
+print(3679.484)
 
 ### ADEC
 #barPlot(reason.data, net.amo = FALSE, contributions = TRUE, yaxisScale = 1000000)
