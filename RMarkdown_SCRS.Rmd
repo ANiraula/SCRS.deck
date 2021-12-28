@@ -4175,6 +4175,100 @@ inflation <- linePlot(Data, title = NULL, caption = FALSE, grid = FALSE,
 inflation
 ```
 
+### Interest on Debt 2001-2021 w/ R (custom)
+
+```{r int.debt, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of SCRS actuarial valuation reports.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
+
+rm(list = ls())
+
+###Load/install packages
+#R.Version()
+#https://github.com/ReasonFoundation/pensionviewr
+#Create token -> usethis::edit_r_environ() -> restart -> Sys.getenv("GITHUB_PAT")
+#install.packages('devtools')
+#library(devtools)
+#devtools::install_github("ReasonFoundation/reasontheme",force = TRUE)
+#devtools::install_github("ReasonFoundation/pensionviewr", force = TRUE)
+#devtools::install_github(
+#  "ANiraula/pensionviewr_private",
+#   ref = "master", auth_token = "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")
+library(reasontheme)
+library(pensionviewr)
+library(ggplot2)
+library(tidyverse)
+library(tseries)
+library(data.table)
+library(readr)
+library(rsconnect)
+library(dplyr)
+library(plyr)
+
+###
+##Pull PERSI data
+##Load list of plans
+
+pl <- planList()
+reason.data <- pullData(pl, "South Carolina Retirement Systems") %>% filter(year > 2000 & !duplicated(year))
+
+### Net Amo
+reason.data$net.amo <- c(reason.data$interest_on_debt_dollar+reason.data$amortization_payment_total_amount)
+reason.data$net.amo[1:3] <- c(-26000000,-6000000,-17000000)
+
+### UAL
+reason.data$ual <- c(reason.data$actuarially_accrued_liabilities_dollar -
+reason.data$actuarial_value_of_assets_dollar)
+
+### Compound Net Amo
+reason.data <- reason.data %>% select(year, net.amo,ual)
+reason.data$compound <- 0
+reason.data$compound[4] <- reason.data$net.amo[4]+reason.data$net.amo[3]
+  
+for (i in (5:21)){
+  reason.data$compound[i] <- reason.data$net.amo[i]+reason.data$compound[i-1]
+}
+
+### Remaining UAL
+reason.data$ual.left <- reason.data$ual-reason.data$compound
+reason.data <- data.frame(reason.data)
+reason.data <- reason.data %>% mutate_all(as.numeric)
+reason.data <- reason.data %>% select(year, compound,ual.left)
+
+colnames(reason.data)[2:3] <- c("Unpaid Interest on Unfunded Liabilities (Cumulative)",
+                                "Unfunded Liability from Other Sources")
+reason.data <- data.table(melt(reason.data, id.vars = "year"))
+
+#### GGPLOT
+ plotTheme <- ggplot2::theme(   panel.grid = element_blank(),
+                                 panel.border = element_blank(),
+                                 axis.line = element_line(colour = "black"),
+                                 plot.margin = margin(0,0.5,0,0, "cm"),
+                                 axis.text.y = element_text(size=12, color = "black"),
+                                 axis.text.x = element_text(size=12, color = "black", angle = 0, hjust = 0.5, vjust = -1),
+                                 axis.title = element_text(size = 12, face = "bold"),
+                                 legend.text = element_text(size = 10),
+                                 legend.title = element_blank(),
+                                 text = element_text(family = "Calibri"))
+  
+  int.debt <- ggplot(data = reason.data, aes(x = year, y = value, fill = variable, 
+    group = variable)) + geom_area(cposition = "stack", stat = "identity") + 
+    ggplot2::labs(y = "Unfunded Actuarial Accrued Liability (in $Billions)", x = "") + 
+    ggplot2::scale_fill_manual(values = c(palette_reason$SpaceGrey, palette_reason$Orange)) + 
+    ggplot2::scale_y_continuous(breaks = scales::pretty_breaks(n = 10), 
+    labels = function(b) paste0("$",round(b/1000000000, 0)), expand = c(0,0)) + 
+    ggplot2::theme(axis.ticks = ggplot2::element_line()) + 
+    ggplot2::scale_x_continuous(breaks = seq(2001,2021, by = 2), expand = c(0, 0)) + 
+    theme(legend.position = "top", text = element_text(family = "Calibri", size = 10)) + 
+    theme_bw() + plotTheme + theme(legend.position = "top")
+  # + geom_text(data=annotation, aes(x=x, y=y, label=label),
+  #         color="black", 
+  #         size=5 , angle=0, fontface="bold" )
+
+#View(reason.data)
+
+  int.debt
+
+```
+
 ### Benefit Accrual & Retention for New SCRS Employee w/ R (custom)
 
 ```{r pwealth, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of SCRS actuarial reports and CAFRs. Illustration is based on plan’s Tier 2, Tier 3, Tier 4 assumptions and a hypothetical analysis of an average member hired at the age of 25", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
