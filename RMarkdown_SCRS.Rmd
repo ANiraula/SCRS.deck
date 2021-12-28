@@ -4245,7 +4245,7 @@ reason.data <- data.table(melt(reason.data, id.vars = "year"))
                                  axis.text.y = element_text(size=12, color = "black"),
                                  axis.text.x = element_text(size=12, color = "black", angle = 0, hjust = 0.5, vjust = -1),
                                  axis.title = element_text(size = 12, face = "bold"),
-                                 legend.text = element_text(size = 10),
+                                 legend.text = element_text(size = 11),
                                  legend.title = element_blank(),
                                  text = element_text(family = "Calibri"))
   
@@ -4257,7 +4257,7 @@ reason.data <- data.table(melt(reason.data, id.vars = "year"))
     labels = function(b) paste0("$",round(b/1000000000, 0)), expand = c(0,0)) + 
     ggplot2::theme(axis.ticks = ggplot2::element_line()) + 
     ggplot2::scale_x_continuous(breaks = seq(2001,2021, by = 2), expand = c(0, 0)) + 
-    theme(legend.position = "top", text = element_text(family = "Calibri", size = 10)) + 
+    theme(legend.position = "top", text = element_text(family = "Calibri", size = 11)) + 
     theme_bw() + plotTheme + theme(legend.position = "top")
   # + geom_text(data=annotation, aes(x=x, y=y, label=label),
   #         color="black", 
