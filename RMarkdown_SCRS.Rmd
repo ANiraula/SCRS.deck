@@ -560,6 +560,34 @@ library(png)
 
 ###### glPlot() Function #####
 
+url = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/SCRS_GL.csv" 
+urlfile=url
+data <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
+
+data <- as.data.table(data)# convert to data.table
+data <-  data %>%
+replace(is.na(.), 0)
+
+    ## Draft for New Gain/Loss bar chart
+    #data2 <- data
+    #for(i in (2:data[,.N])){
+    #data2[i,2: length(data)] <- data2[i,2: length(data)]+data2[(i-1),2: length(data)]
+    #}
+    #
+
+
+  #[2] Calculate Total Gain/Loss for each column (i.e. Net Change to UAL over the years)
+    y = data[,lapply(.SD,sum),.SDcols=colnames(data)]
+    y = y[,!1]# sum values by each column
+    y = t(y)/1000#Saving needed columns and transposing table for graphics
+    
+    inv <- round(y[1],2)
+    assum <- round(y[2],2)
+    amo <- round(y[3],2)
+    demo <- round(y[4],2)
+    cola <- round(y[5],2)
+    payroll <- round(y[6],2)
+
 # glPlot <- function(database = FALSE, data = NULL,
 #       url = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/SCRS_GL.csv", 
 #       interactive = TRUE, 
@@ -726,6 +754,28 @@ library(png)
 
 ![](SCRS_GainLoss.pdf)
 
+### Driving Factors Jeopardizing SCRS Resiliency
+
+-   **Deviations from Investment Return Assumptions** have been the largest contributor to the unfunded liability growth, adding $`r inv` billion from 2001 to 2021. 
+
+    </p>
+
+-   **Changes to Actuarial Methods and Assumptions** – including assumed rate of return - have revealed roughly $`r assum` billion in additional unfunded liability since 2001.
+
+    </p>
+
+-   **Extended Amortization Timetables and low Statutory Contributions** in the past have resulted in interest on SCRS debt exceeding the actual debt payments (negative amortization) since 2001, adding a net $`r amo` billion to the unfunded liabilities. 
+
+    </p>
+
+-  **Deviations from Demographic Assumptions** – including deviations from assumed rates of withdrawal, retirement, and mortality — added $`r demo` billion to the debt since 2001.
+
+    </p>
+
+-   **Ad-Hoc Cost-of-Living-Adjustments** given before 2012 added $`r cola*100` million to unfunded liabilities since 2001.
+
+    </p>
+
 ### Compound Net Change to UAL w/ R (barPlot())
 
 ```{r, dpi = 400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of SCRS actuarial valuation reports.", compoundGL,fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
@@ -778,29 +828,6 @@ compoundGL <- barPlot(
 
 compoundGL
 ```
-
-
-### Driving Factors Jeopardizing SCRS Resiliency
-
--   Deviations from Investment Return Assumptions have been the largest contributor to the unfunded liability growth, adding $2.9 billion to the unfunded liability from 2000 to 2021. 
-
-    </p>
-
--   Deviations and Needed Changes to Actuarial Methods and Assumptions – including deviations from the plan’s withdrawal, retirement, disability, and mortality assumptions - have revealed roughly $2.4 billion in additional unfunded liability since 2000.
-
-    </p>
-
--   Extended Amortization Timetables and low Statutory Contribution Limits in the past have resulted in interest on SCRS debt exceeding the actual debt payments (negative amortization) since 2003, adding a net $2.76 billion to the unfunded liabilities. 
-
-    </p>
-
--  Deviations from Demographic Assumptions – including deviations from withdrawal, retirement, disability, and mortality assumptions — added $86 million to the UAL since 2001.
-
-    </p>
-
--   Ad-Hoc COLAs given before 2012 added $228 million to unfunded liabilities since 2001.
-
-    </p>
 
 ### Make up of Pension Contributions w/ R (flextable())
 
