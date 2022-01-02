@@ -4755,8 +4755,11 @@ palette_reason <- list(Orange="#FF6633",
                        SatBlue = "#3366CC", 
                        Green = "#669900",LightGreen = "#00CC66", Red = "#CC0000",LightRed="#FF0000")
 
-prob1 <- round(SalaryData2$RemainingProb[5],3)
-prob2 <- round(SalaryData2$RemainingProb[20],3)
+vest <- 8
+vest.prob <- round(as.numeric(SalaryData2$RemainingProb[vest]),3)
+vest.20 <- round(as.numeric(SalaryData2$RemainingProb[20]),3)
+retire.prob <- data.table(SalaryData2 %>% filter(YOS+Age >= 90) %>% select(RemainingProb))
+retire.prob <- round(as.numeric(retire.prob[1]),3)
 
 #PULL DATA
 ###################
@@ -4786,12 +4789,18 @@ ret
 
 ### Retention: Only Few of 22 Age New SCRS Hires Receive Benefits
 
-    -   Only `r prob1*100`% of new SCRS employees will stay for 8 years to vest.
+-   Only **`r vest.prob*100`%** of new SCRS employees will stay for 8 years to vest.
 
-</p>
+    </p>
+    
+-   Only **`r vest.20*100`%** of the same employees will be on the job after 20 years.
+    
+    </p>
 
-    -   And only `r prob2*100`% of the same employees will be on the job after 34 years needed to qualify for full retirement
+-   And only **`r retire.prob*100`%** of the same employees will be on the job after 36 years needed to qualify for full retirement (YOS + AGE = 90)
 
+    </p>
+    
 ### References
 
 -   <https://github.com/ReasonFoundation/GraphicsR>
