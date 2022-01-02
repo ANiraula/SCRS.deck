@@ -7,6 +7,7 @@ output:
     reference_doc: template_deck.pptx
   beamer_presentation: default
 always_allow_html: true
+fontsize: 9pt
 font-family: Arial
 ---
 
@@ -581,6 +582,7 @@ replace(is.na(.), 0)
     y = y[,!1]# sum values by each column
     y = t(y)/1000#Saving needed columns and transposing table for graphics
     
+###### Saving 2001-21 G/L for automation later
     inv <- round(y[1],2)
     assum <- round(y[2],2)
     amo <- round(y[3],2)
@@ -756,23 +758,23 @@ replace(is.na(.), 0)
 
 ### Driving Factors Jeopardizing SCRS Resiliency
 
--   **Deviations from Investment Return Assumptions** have been the largest contributor to the unfunded liability growth, adding $`r inv` billion from 2001 to 2021. 
+-   **Deviations from Investment Return Assumptions** have been the largest contributor to the unfunded liability growth, adding **$`r inv`** billion from 2001 to 2021.
 
     </p>
 
--   **Changes to Actuarial Methods and Assumptions** – including assumed rate of return - have revealed roughly $`r assum` billion in additional unfunded liability since 2001.
+-   **Changes to Actuarial Methods and Assumptions** – including assumed rate of return - have revealed roughly **$`r assum`** billion in additional unfunded liability since 2001.
 
     </p>
 
--   **Extended Amortization Timetables and low Statutory Contributions** in the past have resulted in interest on SCRS debt exceeding the actual debt payments (negative amortization) since 2001, adding a net $`r amo` billion to the unfunded liabilities. 
+-   **Extended Amortization Timetables and low Statutory Contributions** in the past have resulted in interest on SCRS debt exceeding the actual debt payments (negative amortization) since 2001, adding a net **$`r amo`** billion to the unfunded liabilities. 
 
     </p>
 
--  **Deviations from Demographic Assumptions** – including deviations from assumed rates of withdrawal, retirement, and mortality — added $`r demo` billion to the debt since 2001.
+-  **Deviations from Demographic Assumptions** – including deviations from assumed rates of withdrawal, retirement, and mortality — added **$`r demo`** billion to the debt since 2001.
 
     </p>
 
--   **Ad-Hoc Cost-of-Living-Adjustments** given before 2012 added $`r cola*100` million to unfunded liabilities since 2001.
+-   **Ad-Hoc Cost-of-Living-Adjustments** given before 2012 added **$`r cola*100`** million to unfunded liabilities since 2001.
 
     </p>
 
@@ -3862,7 +3864,6 @@ library(rlang)
 library(purrr)
 library(rpart)
 library(vip)
-
 
 #View(pl <- planList())
 #x <- pullStateData(2001)
