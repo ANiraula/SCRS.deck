@@ -2713,8 +2713,7 @@ Data$funded_ratio <- Data$mva/Data$aal
 Data$npl_pct_up <- 16067117000
 sensitivity <- Data %>% select(npl_pct_up, npl,npl_pct_down) %>% mutate_all(as.numeric)
 
-
-Data <- Data %>% select(year, dr, ual,funded_ratio,aal,mva)
+Data <- Data %>% select(year, dr, ual,funded_ratio,aal,mva,total_nc_pct,ee_nc_pct) %>% mutate_all(as.numeric)
 
 ### Rediscount function
 reDiscount <- function(data, sensitivity){
@@ -2722,16 +2721,19 @@ reDiscount <- function(data, sensitivity){
  
   sens <- sensitivity %>% mutate_all(as.numeric)
   sens$aal <- as.numeric(data$aal)
+  sens$total_nc_pct <- as.numeric(data$total_nc_pct)
   sens <- sens %>% mutate(aal.duration = ((npl_pct_down/npl_pct_up)^(0.5)-1)*100,
                           aal.convexity = ((npl_pct_down*npl_pct_up)/(npl^2)-1)*100,
                           aal.dr1 = aal*((1+aal.duration/100))^(1)*((1+aal.convexity/100))^((1)^2/2),
                           aal.dr2 = aal*((1+aal.duration/100))^(2)*((1+aal.convexity/100))^((2)^2/2),
-                          aal.dr3 = aal*((1+aal.duration/100))^(3)*((1+aal.convexity/100))^((3)^2/2))
+                          aal.dr3 = aal*((1+aal.duration/100))^(3)*((1+aal.convexity/100))^((3)^2/2),
+                          nc.dr1 = total_nc_pct*(1+aal.duration*2/100)^(1),
+                          nc.dr2 = total_nc_pct*(1+aal.duration*2/100)^(2),
+                          nc.dr3 = total_nc_pct*(1+aal.duration*2/100)^(3))
   sens
 }
 
 redisc <- reDiscount(Data, sensitivity)
-
 #Create table skeleton
 table <- matrix(NA,4,4)
 
