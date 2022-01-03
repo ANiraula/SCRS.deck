@@ -3588,7 +3588,6 @@ net.amo <- barPlot(
   lab9 = NULL)
 
 net.amo
-print(3679.484)
 
 ### ADEC
 #barPlot(reason.data, net.amo = FALSE, contributions = TRUE, yaxisScale = 1000000)
