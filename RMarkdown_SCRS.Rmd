@@ -1,6 +1,6 @@
 ---
 title: "South Carolina Retirement System Solvency Analysis"
-author: "Prepared by:Pension Integrity Project at Reason Foundation. 2022—Preliminary Draft"
+author: "Prepared by: Pension Integrity Project at Reason Foundation. 2022—Preliminary Draft"
 date: "07/14/2021"
 output:
   powerpoint_presentation:
@@ -4147,6 +4147,88 @@ contributions <- barPlot(
   lab9 = NULL)
 
 contributions
+```
+### SCRS Amortization Period (2001-2021) custom R
+
+```{r amo.period, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of SCRS actuarial valuation reports.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
+
+rm(list = ls())
+
+###Load/install packages
+#R.Version()
+#https://github.com/ReasonFoundation/pensionviewr
+#Create token -> usethis::edit_r_environ() -> restart -> Sys.getenv("GITHUB_PAT")
+#install.packages('devtools')
+#library(devtools)
+#devtools::install_github("ReasonFoundation/reasontheme",force = TRUE)
+#devtools::install_github("ReasonFoundation/pensionviewr", force = TRUE)
+#devtools::install_github(
+#  "ANiraula/pensionviewr_private",
+#   ref = "master", auth_token = "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")
+library(reasontheme)
+library(pensionviewr)
+library(ggplot2)
+library(tidyverse)
+library(tseries)
+library(data.table)
+library(readr)
+library(rsconnect)
+library(plyr)
+library(dplyr)
+
+###
+##Pull PERSI data
+##Load list of plans
+Data <- data.frame(
+                   year = seq(2001, 2021, by = 1),
+                   amo.period = c(17,21,25, 26,30,30,29,29,30,30,29, 30,30,29.7,30.4,36,30,29,28,27,26)
+  
+                    )
+
+########areaPlot
+
+
+  
+  plotTheme <- ggplot2::theme(   panel.grid.major = element_blank(),
+                                 panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),
+                                 plot.margin = margin(0,0.5,0,0, "cm"),
+                                 axis.text.y = element_text(size=12, color = "black"),
+                                 axis.text.x = element_text(size=12, color = "black", angle = 0, hjust = 0.5, vjust = -1),
+                                 axis.title = element_text(size = 12, face = "bold"),
+                                 legend.text = element_text(size = 12),
+                                 legend.title = element_blank(),
+                                 text = element_text(family = "Calibri"))
+  
+
+    data <- as.data.table(Data)
+    
+  reasontheme::set_reason_theme(style = "slide")
+  data <- data.frame(data)
+  #annotation <- data.frame(
+  # x = c(2004, 2018),
+  # y = c(10/yaxisScale, 20/yaxisScale),
+  # label = c(paste("FYE 2001:",round(data.table(Data$ava/Data$aal)[1]*100,1),"%"), "2020 FR")
+  # )
+  
+  amo.period <- ggplot2::ggplot(data, ggplot2::aes(x = year)) + 
+    ggplot2::geom_line(ggplot2::aes(y = amo.period), color = palette_reason$SatBlue, size = 1, linetype =  "dashed") + 
+    ggplot2::scale_y_continuous(breaks = seq(0, 40, by = 4),limits = c(0, 40.2), expand = c(0, 0))+
+    ggplot2::theme(axis.ticks.x = element_line(size = 0.5, color = "black")) +
+    ggplot2::theme(panel.border = element_blank(), axis.ticks.y = element_line(size = 0.5, color = "black")) + 
+    ggplot2::theme(axis.text = element_text(size = 12), 
+    axis.title = element_text(size = 13, face = "bold")) + labs(x = element_blank(), y = "Amortization Period")+
+    ggplot2::geom_hline(yintercept = 20,color = "black")+
+    ggplot2::scale_x_continuous(breaks = seq(2001, 2021, by = 2), expand = c(0, 0)) + 
+    ggplot2::theme(legend.position = "none") + plotTheme 
+  # + geom_text(data=annotation, aes(x=x, y=y, label=label),
+  #         color="black", 
+  #         size=5 , angle=0, fontface="bold" )
+####
+
+amo.period
+
+#debt <- areaPlot(Data, title = "", caption = FALSE, grid = F, ticks = F, sp500 = TRUE)
+#debt
 ```
 
 ### Change in Risk-Free Rate vs. Discount Rate (2001-2021) w/ R (linePlot())
