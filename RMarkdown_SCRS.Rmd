@@ -4148,6 +4148,7 @@ contributions <- barPlot(
 
 contributions
 ```
+
 ### SCRS Amortization Period (2001-2021) custom R
 
 ```{r amo.period, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of SCRS actuarial valuation reports.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
@@ -4212,7 +4213,7 @@ Data <- data.frame(
   
   amo.period <- ggplot2::ggplot(data, ggplot2::aes(x = year)) + 
     ggplot2::geom_line(ggplot2::aes(y = amo.period), color = palette_reason$SatBlue, size = 1, linetype =  "dashed") + 
-    ggplot2::scale_y_continuous(breaks = seq(0, 40, by = 4),limits = c(0, 40.2), expand = c(0, 0))+
+    ggplot2::scale_y_continuous(breaks = seq(0, 40, by = 4),limits = c(0, 40.5), expand = c(0, 0))+
     ggplot2::theme(axis.ticks.x = element_line(size = 0.5, color = "black")) +
     ggplot2::theme(panel.border = element_blank(), axis.ticks.y = element_line(size = 0.5, color = "black")) + 
     ggplot2::theme(axis.text = element_text(size = 12), 
