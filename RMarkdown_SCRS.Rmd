@@ -4180,11 +4180,17 @@ library(dplyr)
 ###
 ##Pull PERSI data
 ##Load list of plans
+
+pl <- planList()
+reason.data <- pullData(pl, "South Carolina Retirement Systems") %>% filter(year > 2000 & !duplicated(year))
+
 Data <- data.frame(
-                   year = seq(2001, 2021, by = 1),
-                   amo.period = c(17,21,25, 26,30,30,29,29,30,30,29, 30,30,29.7,30.4,36,30,29,28,27,26)
-  
-                    )
+  reason.data %>% select(year, number_of_years_remaining_on_amortization_schedule)
+)
+	
+colnames(Data)[2] <- "amo.period"
+Data$amo.period <- as.numeric(Data$amo.period)
+Data$year <- as.numeric(Data$year)
 
 ########areaPlot
 
@@ -4917,6 +4923,7 @@ reason.data <- reason.data %>% select(year, compound,ual.left)
 
 colnames(reason.data)[2:3] <- c("Unpaid Interest on Unfunded Liabilities (Cumulative)",
                                 "Unfunded Liability from Other Sources")
+reason.data <- data.table(reason.data)
 reason.data <- data.table(melt(reason.data, id.vars = "year"))
 
 #### GGPLOT
