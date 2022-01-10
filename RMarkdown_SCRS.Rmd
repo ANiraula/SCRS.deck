@@ -1935,7 +1935,7 @@ sp500
 
 ### New Normal: The Market Has Changed
 
-The "new normal" for the institutional investing suggests that achieving even a 6% average rate of return is optimistic.
+The "new normal" for the institutional investing, despite the post-COVID rebound, suggests that achieving even a 6% average rate of return is optimistic.
 
 </p>
 
@@ -1953,7 +1953,7 @@ The "new normal" for the institutional investing suggests that achieving even a 
 
         </p>
 
-3.  As FR waits for the "recover" its unfunded liabilities continue to grow.
+3.  As SCRS waits for the continual "rebound" its unfunded liabilities continue to grow.
 
 ### Asset Allocation (2001-2021) w/ R (custom)
 
@@ -5079,17 +5079,22 @@ ret
 
 ### Retention: Only Few of 22 Age New SCRS Hires Receive Benefits
 
--   Only **`r vest.prob*100`%** of new SCRS employees will stay for 8 years to vest.
+Only **`r vest.prob*100`%** of new Age 22 (Class Three) SCRS members will stay for 8 years.
 
-    </p>
-    
--   Only **`r vest.20*100`%** of the same employees will be on the job after 20 years.
-    
-    </p>
+</p>
+</p>
 
--   And only **`r retire.prob*100`%** of the same employees will be on the job after 36 years needed to qualify for full retirement (YOS + AGE = 90)
+-   Class Three employees must work 8 years before their benefits become vested.
+-   Members who leave the plan before then must forfeit contributions their employer made on their behalf.
+-   Only **`r vest.20*100`%** of the initial employees will accrue 20 years of service.
 
-    </p>
+</p>
+</p>
+
+And only **`r retire.prob*100`%** of Age 22 Class Three members hired next year will still be working after reaching Rule of 90 threshold (Age + Years of Service), long enough to qualify for unreduced benefits.
+
+</p>
+
     
 ### References
 
