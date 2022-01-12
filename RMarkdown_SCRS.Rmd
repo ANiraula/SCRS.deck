@@ -4958,11 +4958,11 @@ reason.data <- data.table(melt(reason.data, id.vars = "year"))
 
 ```
 
-### Benefit Accrual & Retention for New SCRS Employee w/ R (custom)
+### Benefit Accrual & Retention for an Average New SCRS Employee (Age 27)  w/ R (custom)
 
-```{r pwealth, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of SCRS actuarial reports and CAFRs. Illustration is based on plan’s Tier 2, Tier 3, Tier 4 assumptions and a hypothetical analysis of an average member hired at the age of 25", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
+```{r pwealth, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of SCRS actuarial reports and CAFRs. Illustration is based on plan’s Class Three assumptions and a hypothetical analysis of an average new member hired at the age of 27", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
 
-SalaryData2 <- read_csv("NDPERS_PWealth.csv")
+SalaryData2 <- read_csv("SCRS_BModel.csv")
 #View(SalaryData2) 
 
 e.age <- unique(SalaryData2$entry_age)
@@ -4970,9 +4970,10 @@ SalaryData2 <- data.frame(SalaryData2)
 SalaryData2$entry_age <- as.numeric(SalaryData2$entry_age)
 # #View(SalaryData2)
 # 
-SalaryData2 <- SalaryData2 %>% filter(entry_age == 22)
+entry <- 27
+SalaryData2 <- SalaryData2 %>% filter(entry_age == entry)
 SalaryData2 <- SalaryData2 %>% filter(Age < 81)
-SalaryData2$PVPenWealth <- as.numeric(SalaryData2$PVPenWealth)
+SalaryData2$PVPenWealth <- as.numeric(SalaryData2$RealPenWealth)
 y_max <- max(SalaryData2$PVPenWealth)
 
 palette_reason <- list(Orange="#FF6633",
@@ -4998,7 +4999,7 @@ pwealth <- ggplot(SalaryData2, aes(Age,PVPenWealth/1000))+
                 text = paste0("Age: ", Age,
                               "<br>Members Remaining: ", round(RemainingProb*100,1), "%")), size = 1.25, color = palette_reason$LightBlue, linetype = "dashed")+
   scale_x_continuous(breaks = seq(0, 80, by = 10),labels = function(x) paste0(x),
-                     name = paste0("Age (Entry age at 22)"), expand = c(0,0)) +
+                     name = paste0("Age (Entry age at ", entry, ")"), expand = c(0,0)) +
   
   scale_y_continuous(breaks = seq(0, 5000, by = 100),limits = c(0, y_max/1000*1.05), labels = function(x) paste0("$",x),
                      sec.axis = sec_axis(~./(y_max/100), breaks = scales::pretty_breaks(n = 10), name = "Percent of Members Remaining",
@@ -5020,18 +5021,21 @@ pwealth
 
 ### Retention Rates for a New SCRS Employee  w/ R (custom)
 
-```{r ret, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of SCRS actuarial reports and CAFRs. Illustration is based on plan’s Tier 2, Tier 3, Tier 4 assumptions and a hypothetical analysis of an average member hired at the age of 25", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
+```{r ret, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of SCRS actuarial reports and CAFRs. Illustration is based on plan’s Class Three assumptions and a hypothetical analysis of an average new member hired at the age of 27", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
 
-SalaryData2 <- read_csv("NDPERS_PWealth.csv")
+library(data.table)
+SalaryData2 <- read_csv("SCRS_BModel.csv")
 
 e.age <- unique(SalaryData2$entry_age)
 SalaryData2 <- data.frame(SalaryData2)
 SalaryData2$entry_age <- as.numeric(SalaryData2$entry_age)
 # #View(SalaryData2)
 # 
-SalaryData2 <- SalaryData2 %>% filter(entry_age == 22)
+
+entry <- 27
+SalaryData2 <- SalaryData2 %>% filter(entry_age == entry)
 SalaryData2 <- SalaryData2 %>% filter(Age < 81)
-SalaryData2$PVPenWealth <- as.numeric(SalaryData2$PVPenWealth)
+SalaryData2$PVPenWealth <- as.numeric(SalaryData2$RealPenWealth)
 
 palette_reason <- list(Orange="#FF6633",
                        LightOrange="#FF9900",
@@ -5059,7 +5063,7 @@ ret <- ggplot(SalaryData2)+
                 text = paste0("Age: ", Age,
                               "<br>Members Remaining: ", round(RemainingProb*100,1), "%")), size = 1.25, color = palette_reason$LightBlue, linetype = "dashed")+
   scale_x_continuous(breaks = seq(0, 100, by = 10),labels = function(x) paste0(x),
-                     name = paste0("Age (Entry age at 22)"), expand = c(0,0)) +
+                     name = paste0("Age (Entry age at ", entry, ")"), expand = c(0,0)) +
   
   scale_y_continuous(breaks = scales::pretty_breaks(n = 10), name = "Percent of Members Remaining",
                                          labels = function(b) paste0(round(b*100, 0), "%"), expand = c(0,0)) +
@@ -5077,9 +5081,9 @@ ret <- ggplot(SalaryData2)+
 ret
 ```
 
-### Retention: Only Few of 22 Age New SCRS Hires Receive Benefits
+### Retention: Only Few of `r entry` Age New SCRS Hires Receive Benefits
 
-Only **`r vest.prob*100`%** of new Age 22 (Class Three) SCRS members will stay for 8 years.
+Only **`r vest.prob*100`%** of new Age `r entry` (Class Three) SCRS members will stay for 8 years.
 
 </p>
 </p>
@@ -5091,7 +5095,7 @@ Only **`r vest.prob*100`%** of new Age 22 (Class Three) SCRS members will stay f
 </p>
 </p>
 
-And only **`r retire.prob*100`%** of Age 22 Class Three members hired next year will still be working after reaching Rule of 90 threshold (Age + Years of Service), long enough to qualify for unreduced benefits.
+And only **`r retire.prob*100`%** of Age `r entry` Class Three members hired next year will still be working after reaching Rule of 90 threshold (Age + Years of Service), long enough to qualify for unreduced benefits.
 
 </p>
 
