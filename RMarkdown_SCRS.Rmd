@@ -4955,12 +4955,33 @@ reason.data <- data.table(melt(reason.data, id.vars = "year"))
 #View(reason.data)
 
   int.debt
-
 ```
 
 ### Benefit Accrual & Retention for an Average New SCRS Employee (Age 27)  w/ R (custom)
 
 ```{r pwealth, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of SCRS actuarial reports and CAFRs. Illustration is based on plan’s Class Three assumptions and a hypothetical analysis of an average new member hired at the age of 27", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
+
+
+rm(list=ls())
+###Load/install packages
+#R.Version()
+#https://github.com/ReasonFoundation/pensionviewr
+#Create token -> usethis::edit_r_environ() -> restart -> Sys.getenv("GITHUB_PAT")
+#install.packages('devtools')
+#library(devtools)
+#devtools::install_github("ReasonFoundation/reasontheme",force = TRUE)
+#devtools::install_github("ReasonFoundation/pensionviewr", force = TRUE)
+library(reasontheme)
+library(pensionviewr)
+library(ggplot2)
+library(tidyverse)
+library(tseries)
+library(data.table)
+library(readr)
+library(rsconnect)
+library(dplyr)
+library(plyr)
+
 
 SalaryData2 <- read_csv("SCRS_BModel.csv")
 #View(SalaryData2) 
@@ -4987,6 +5008,10 @@ palette_reason <- list(Orange="#FF6633",
                        LightBlue = "#66B2FF", 
                        SatBlue = "#3366CC", 
                        Green = "#669900",LightGreen = "#00CC66", Red = "#CC0000",LightRed="#FF0000")
+
+pw.28 <- round(as.numeric(SalaryData2$PVPenWealth[28])/1000,2)
+pw.32 <- round(as.numeric(SalaryData2$PVPenWealth[31])/1000,2)
+pw.32.p <- round(as.numeric((pw.32/pw.20-1))*100,1)
 
 #PULL DATA
 ###################
@@ -5015,9 +5040,24 @@ pwealth <- ggplot(SalaryData2, aes(Age,PVPenWealth/1000))+
     axis.text.x = element_text(size=11, color = "black"),
     legend.title = element_text(size = 9, colour = "black", face = "bold"))
 
-
 pwealth
 ```
+
+### Delaying Eligibility for Full Benefits Backloads `r entry` Age New SCRS Hires' Benefits
+
+Only **$`r pw.20`K** is what new Age `r entry` (Class Three) SCRS members will accrue after 28 years on the job (value of future benefits at retirement) .
+
+</p>
+</p>
+
+-   All new employees Are better off collecting their contributions (with interest), before they qualify for Reduced or Full retirement.
+
+</p>
+</p>
+
+But this value spikes to **$`r pw.32`K** or **`r pw.32.p`%** jump after just 4 more years (long enough to receive Full Benefits)
+
+</p>
 
 ### Retention Rates for a New SCRS Employee  w/ R (custom)
 
