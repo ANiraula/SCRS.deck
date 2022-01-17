@@ -109,7 +109,7 @@ Data <- Data %>% filter(year < 2022)
 
 #View(Data)
 Data <-
-  data.table(Data) %>% filter(plan_name == "South Carolina Retirement Systems")
+  data.table(Data) %>% filter(plan_name == "Public Employees' Retirement System of Mississippi")
 
 Data$year <- as.numeric(Data$year)
 Data$ava <- as.numeric(Data$ava)
@@ -599,7 +599,7 @@ Data$ava <- as.numeric(Data$ava)
 Data$aal <- as.numeric(Data$aal)
 Data$year <- as.numeric(Data$year)
 
-Data <- Data %>% filter(plan_name == "South Carolina Retirement Systems")
+Data <- Data %>% filter(plan_name == "Public Employees' Retirement System of Mississippi")
 
 Data$unfunded_actuarially_accrued_liabilities_dollar <- as.numeric(Data$unfunded_actuarially_accrued_liabilities_dollar)
 
@@ -2903,6 +2903,7 @@ plan.name <- c("SCRS")
 Data$year <- as.numeric(Data$year)
 Data$mva <- as.numeric(Data$mva)
 Data$aal <- as.numeric(Data$aal)
+Data$npl <- as.numeric(Data$npl)
 Data$unfunded_actuarially_accrued_liabilities_dollar <- as.numeric(Data$unfunded_actuarially_accrued_liabilities_dollar)
 
 #####
@@ -2910,19 +2911,27 @@ Data$ual <- Data$aal - Data$mva
 Data$funded_ratio <- Data$mva/Data$aal
 
 Data$npl_pct_up <- 16067117000
-sensitivity <- Data %>% select(npl_pct_up, npl,npl_pct_down) %>% mutate_all(as.numeric)
+sensitivity <- Data %>% mutate_all(as.numeric)  %>% 
+                         select(npl_pct_up, npl,npl_pct_down, mva) %>% mutate_all(as.numeric)
+
+
+sensitivity <- sensitivity %>% mutate(tpl_pct_up = npl_pct_up + mva,
+                               tpl = npl + mva,
+                               tpl_pct_down = npl_pct_down + mva)
 
 Data <- Data %>% select(year, dr, ual,funded_ratio,aal,mva,total_nc_pct,ee_nc_pct) %>% mutate_all(as.numeric)
-
+View(Data)
+View(sensitivity)
 ### Rediscount function
+
 reDiscount <- function(data, sensitivity){
   
  
   sens <- sensitivity %>% mutate_all(as.numeric)
   sens$aal <- as.numeric(data$aal)
   sens$total_nc_pct <- as.numeric(data$total_nc_pct)
-  sens <- sens %>% mutate(aal.duration = ((npl_pct_down/npl_pct_up)^(0.5)-1)*100,
-                          aal.convexity = ((npl_pct_down*npl_pct_up)/(npl^2)-1)*100,
+  sens <- sens %>% mutate(aal.duration = ((tpl_pct_down/tpl_pct_up)^(0.5)-1)*100,
+                          aal.convexity = ((tpl_pct_down*tpl_pct_up)/(tpl^2)-1)*100,
                           aal.dr1 = aal*((1+aal.duration/100))^(1)*((1+aal.convexity/100))^((1)^2/2),
                           aal.dr2 = aal*((1+aal.duration/100))^(2)*((1+aal.convexity/100))^((2)^2/2),
                           aal.dr3 = aal*((1+aal.duration/100))^(3)*((1+aal.convexity/100))^((3)^2/2),
@@ -2954,6 +2963,386 @@ table[1:4,1] <- scales::percent(table$`Discount Rate`, accuracy = 0.1)
 table[1:4,2] <- scales::percent(table$`Funded Ratio (MVA)`, accuracy = 0.1)
 table[1:4,3] <- scales::dollar(round(table$`Unfunded Liability (MVA)`/1000000000,1))
 table[1:4,4] <- scales::dollar(round(table$`Actuarial Accrued Liability`/1000000000,1))
+
+
+
+#View(table)
+#Knit the table
+#knitr::kable(
+#  table, caption = 'Pension Integrity Project pension database.'
+#)
+
+library(flextable)
+library(officer)
+
+#https://davidgohel.github.io/flextable/reference/index.html
+
+
+table <-  table[1:4,1:4] %>% 
+  tibble::rownames_to_column() %>% 
+  select(-"rowname") %>%
+  flextable() %>%
+  set_header_labels(rowname = "")
+
+#table <- add_header_row(table, values = "FY2023 Contributions", colwidths = 3)
+
+#Modify table style using "flextable"      
+ table <- table %>%
+  #theme_zebra() %>% 
+    autofit() %>% 
+    border_inner_h() %>% 
+    border_outer() %>%
+    border_inner_v() %>%
+    border_inner_v(part = "header") %>%
+    font(fontname = "Arial", part = "all") %>%
+    align(part = "all", align = "center") %>%
+    align(j = 3:4, align = "right") %>%
+    italic(j = 3:4, italic = TRUE, part = "body") %>%
+    bold(part = "all", bold = 4) %>%
+    color(color = "black") %>%
+    color(color = "white", part = "header") %>%
+    bg(bg = c("#919daa","#d3d8dd","#919daa","#d3d8dd"), part = "body") %>%
+    bg(bg = c("#101010"), part = "header")
+
+ ## Set boder style
+ head_border = fp_border(color= palette_reason$Orange, width = 2)
+ inner_border = fp_border(color= "white", width = 1)
+ 
+ ##Add border style to table
+
+ table <- border_inner(table, part="all", border = inner_border )
+ table <- border_outer(table, part="all", border = inner_border )
+ table <- hline_bottom(table, part="header", border = head_border )
+ table <-  fontsize(table, size = 18, part = "all")
+ table <- width(table, j = 1:4, width = 2)
+ 
+table
+```
+
+### SCRS Normal Cost Sensitivity to DR Changes 2021 w/ R (flextable())
+
+```{r}
+
+rm(list=ls())
+
+library(reasontheme)
+library(pensionviewr)
+library(ggplot2)
+library(tidyverse)
+library(tseries)
+library(data.table)
+library(readr)
+library(rsconnect)
+library(dplyr)
+library(plyr)
+library(DT)
+library(scales)
+
+pullStateData <- function (FY)
+{
+  con <- RPostgres::dbConnect(
+    RPostgres::Postgres(),
+    dbname = "d629vjn37pbl3l",
+    host = "ec2-3-209-200-73.compute-1.amazonaws.com",
+    port = 5432,
+    user = "reason_readonly",
+    password = "p88088bd28ea68027ee96c65996f7ea3b56db0e27d7c9928c05edc6c23ef2bc27",
+    sslmode = "require")
+  
+  query <- paste("select * from pull_data_state_only()\nwhere year > '",
+                 paste(FY - 1), "'\nand attribute_name in ('1 Year Investment Return Percentage',\n'PPD Fund ID',\n'Number of Employers',\n'Number of Plans',\n'Actuarial Cost Method in GASB Reporting',\n'Employer Normal Cost Percentage',\n'Total Normal Cost Dollar',\n'Actuarial Funded Ratio Percentage',\n'Market Investment Return (MVA Basis)',\n'Actuarial Value of Assets GASB Dollar',\n'Market Value of Assets Dollar',\n'Market Assets Reported for Asset Smoothing',\n'Actuarially Accrued Liabilities Dollar',\n'Total Pension Liability Dollar',\n'Actuarially Determined Contribution Percentage of Payroll',\n'Actuarially Required Contribution Dollar',\n'Actuarially Required Contribution Paid Percentage',\n'Total Employer Contributions',\n'Statutory Payment Dollar',\n'Statutory Payment Percentage',\n'Amortizaton Method',\n'Total Benefits Paid Dollar',\n'Benefit Payments Dollar',\n'Refunds Dollar',\n'Administrative Expense Dollar',\n'Cost Structure',\n'Asset Valuation Method for GASB Reporting',\n'Covered Payroll Dollar',\n'Employee Contribution Dollar',\n'Employee Normal Cost Percentage',\n'Employer Contribution Regular Dollar',\n'Employer Normal Cost Dollar',\n'Employer State Contribution Dollar',\n'ADEC as a Percent of Payroll',\n'Other Contribution Dollar',\n'Other Additions',\n'Fiscal Year of Contribution',\n'Inflation Rate Assumption For GASB Reporting',\n'Investment Return Assumption for GASB Reporting',\n'Discount Rate Assumption',\n'Number of Years Remaining on Amortization Schedule',\n'Payroll Growth Assumption',\n'Unfunded Actuarially Accrued Liabilities Dollar',\n'Total Contribution Dollar',\n'Total Normal Cost Percentage',\n'Net Pension Liability Dollar',\n'Net Pension Liability Assuming 1% Decrease in Discount Rate',\n'Net Pension Liability Assuming 1% Increase in Discount Rate',\n'Total Number Of Members',\n'Total Projected Actuarial Required Contribution Percentage Of Payroll',\n'Actuarially Required Contribution Paid Dollar',\n'Actuarially Determined Contribution Paid Dollar',\n'Type of Employees Covered',\n'Total Amortization Payment Percentage',\n'Wage Inflation')")
+  result <- RPostgres::dbSendQuery(con, query)
+  all_data <- RPostgres::dbFetch(result) %>% janitor::clean_names()
+  RPostgres::dbClearResult(result)
+  RPostgres::dbDisconnect(con)
+  all_data %>% dplyr::group_by_at(dplyr::vars(-.data$attribute_value)) %>%
+    dplyr::mutate(row_id = 1:dplyr::n()) %>% dplyr::ungroup() %>%
+    tidyr::pivot_wider(names_from = attribute_name, values_from = attribute_value) %>%
+    dplyr::select(-.data$row_id) %>% dplyr::arrange(display_name,
+                                                    year) %>% janitor::clean_names()
+}
+
+#############
+#############
+
+filterData2 <- function(Data, fy = 2001,
+                       inflation = TRUE,
+                       expenditure = TRUE,
+                       employee = NULL,
+                       blend.teacher = FALSE,
+                       source = FALSE) {
+  if (isTRUE(blend.teacher)) {
+    blended.teach <- c("Arizona State Retirement System",
+                       "Delaware State Employees’ Pension Plan", "District of Columbia Teachers Retirement Fund",
+                       "Florida Retirement System", "Employee Retirement System of Hawaii",
+                       "Idaho Public Employee Retirement System", "Iowa Public Employees' Retirement System",
+                       "Kansas Public Employees' Retirement System", "Public Employees' Retirement System of Mississippi",
+                       "Nevada Public Employees Retirement System", "New Hampshire Retirement System",
+                       "North Carolina Teachers' and State Employees' Retirement System",
+                       "Oregon Public Employees Retirement System", "Rhode Island Employees Retirement System",
+                       "South Carolina Retirement Systems", "South Dakota Retirement System",
+                       "Tennessee Consolidated Retirement System, Teachers Pension Plan",
+                       "Utah Retirement Systems, Noncontributory Retirement System",
+                       "Virginia Retirement System", "Wisconsin Retirement System",
+                       "Wyoming Retirement System, Public Employees’ Pension Plan",
+                       "Maine Public Employees Retirement System (PERS) Defined Benefit Plan",
+                       "Maryland State Employees’ Retirement System")
+    Data <- data.frame(Data)
+    Data <- Data %>% mutate(type_of_employees_covered = case_when(display_name %in%
+                                                                    blended.teach ~ "Plan covers state, local and teachers",
+                                                                  TRUE ~ type_of_employees_covered))
+  }
+  Data <- data.frame(Data)
+  columns <- c("total_pension_liability_dollar", "wage_inflation",
+               "payroll_growth_assumption", "other_contribution_dollar",
+               "other_additions_dollar", "x1_year_investment_return_percentage",
+               "amortizaton_method", "number_of_years_remaining_on_amortization_schedule",
+               "amortization_payment_total_amount",
+               "total_normal_cost_dollar", "fiscal_year_of_contribution",
+               "statutory_payment_dollar", "statutory_payment_percentage",
+               "ppd_fund_id", "number_of_employers", "number_of_plans",
+               "discount_rate_assumption", "market_investment_return_mva_basis", 
+               "actuarially_determined_contribution_dollar",
+               "net_pension_liability_dollar",
+               "net_pension_liability_assuming_1_percent_decrease_in_discount_rate",
+               "net_pension_liability_assuming_1_percent_increase_in_discount_rate",
+               "actuarially_required_contribution_paid_dollar",
+               "actuarially_determined_contribution_paid_dollar",
+               "cost_structure", "employer_normal_cost_percentage", "actuarial_value_of_assets_dollar",
+               "asset_valuation_method_for_gasb_reporting", "inflation_rate_assumption",
+               "total_number_of_members", "total_projected_actuarial_required_contribution_percentage_of_payroll",
+               "market_assets_reported_for_asset_smoothing")
+  columns2 <- c("test")
+  for (i in (1:length(columns))) {
+    if (sum(colnames(Data) %in% columns[i]) == 0) {
+      columns2 <- rbind(columns2, columns[i])
+    }
+  }
+  columns2 <- as.character(columns2 <- columns2[2:length(columns2)])
+  cols <- matrix(NA, length(Data[, 1]), length(columns2))
+  colnames(cols) <- columns2
+  Data <- cbind(Data, cols)
+  Data <- data.frame(Data)
+  Data <- Data %>% arrange(state, display_name, year)
+  Data$year <- as.numeric(Data$year)
+  if (isTRUE(inflation)) {
+    library(readxl)
+    library(httr)
+    url1 <- "https://github.com/ReasonFoundation/databaseR/raw/master/files/CPI_by_Region_DOL.xlsx"
+    GET(url1, write_disk(tf <- tempfile(fileext = ".xlsx")))
+    cpi <- read_excel(tf, sheet = 1)
+    regions <- read_excel(tf, sheet = 2)
+    cpi <- data.table(cpi)
+    regions <- data.table(regions)
+    cpi$cpi.change <- NA
+    for (i in (2:length(cpi$region))) {
+      cpi$cpi.change[i] <- (cpi$cpi[i]/cpi$cpi[i - 1]) -
+        1
+    }
+    Data <- Data %>% left_join(regions, by = "state")
+    Data <- Data %>% left_join(cpi, by = c("year", "region"))
+    Data <- Data %>% select(-cpi)
+  }
+
+  if (isTRUE(expenditure)) {
+
+    #1. General Fund Exp./Rev. NASBO (State)
+    #2. Total Exp./Rev. NASBO (State) --> general funds, other state funds, bonds, and federal funds.
+    #3. Total Exp./Rev. Urban (State & Local) --> state and local direct general expenditures (exclude “business-like” activities such as utilities and transfers between state and local governments.)
+
+    library(readxl)
+    library(httr)
+    urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/NASBO_Exp_Report_Data_v1.csv"
+    NASBO<-read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
+    NASBO <- setDT(NASBO)
+    NASBO <- NASBO %>% select(YEAR, STATE,"TOTAL_CAPI") %>% filter(YEAR>2000)
+    #View(NASBO)
+    colnames(NASBO)[1] <- "year"
+    colnames(NASBO)[2] <- "state"
+    Data <- Data %>% left_join(NASBO, by = c("year","state"))
+    ####
+    urlfile="https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/UrbanCensus_ExpRev_2000-2018.csv"
+    Urban<-read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
+    Urban <- setDT(Urban)
+
+    Urban <- Urban %>% select(Year, State,"(R01) Total Revenue", "(E001) Total Expenditure")
+
+    colnames(Urban)[1] <- "year"
+    colnames(Urban)[2] <- "state"
+     
+    Data <- Data %>% left_join(Urban, by = c("year","state"))
+
+  }
+
+
+  Data <- Data %>% select(year, plan_name = display_name,
+                          state, if (isTRUE(source)) {
+                            "data_source_name"
+                          }, return_1yr = x1_year_investment_return_percentage,
+                          ava_return = market_investment_return_mva_basis, actuarial_cost_method_in_gasb_reporting,
+                          funded_ratio = actuarial_funded_ratio_percentage, ava = actuarial_value_of_assets_dollar, #actuarial_value_of_assets_gasb_dollar (PPD)
+                          mva = market_value_of_assets_dollar, mva_smooth = market_assets_reported_for_asset_smoothing,
+                          aal = actuarially_accrued_liabilities_dollar,
+                          adec1 = actuarially_determined_contribution_dollar,
+                          adec2 =   actuarially_required_contribution_paid_dollar,  #actuarially_required_contribution_dollar (PPD)
+                          adec_paid_pct = actuarially_required_contribution_paid_percentage,
+                          adec_pct = adec_as_a_percent_of_payroll, #instead of employers_projected_actuarial_required_contribution
+                          arc_paid_dollar = actuarially_required_contribution_paid_dollar, #NEW
+                          adec_paid_dollar = actuarially_determined_contribution_paid_dollar,#NEW
+                          statutory = statutory_payment_dollar, statutory_pct = statutory_payment_percentage,
+                          amortizaton_method, total_benefit_payments = total_benefits_paid_dollar,
+                          benefit_payments = benefit_payments_dollar, refunds = refunds_dollar,
+                          admin_exp = administrative_expense_dollar, cost_structure,
+                          state_exp_NASBO = TOTAL_CAPI, #gf_rev_NASBO = "TOTAL REV",
+                          state.local_exp_Census = "(R01) Total Revenue", state.local_rev_Census = "(E001) Total Expenditure",
+                          fund_id = ppd_fund_id, employers = number_of_employers,
+                          plans = number_of_plans, asset_valuation_method_for_gasb_reporting,
+                          payroll = covered_payroll_dollar, ee_contribution = employee_contribution_dollar,
+                          ee_nc_pct = employee_normal_cost_percentage,
+                          er_nc_pct = employer_normal_cost_percentage,total_nc_pct = total_normal_cost_percentage, 
+                          er_contribution = employer_contribution_regular_dollar, er_state_contribution = employer_state_contribution_dollar,
+                          other_contribution = other_contribution_dollar, other_additions = other_additions_dollar,
+                          fy_contribution = fiscal_year_of_contribution, inflation_assum = inflation_rate_assumption,
+                          arr = investment_return_assumption_for_gasb_reporting,
+                          dr = discount_rate_assumption, number_of_years_remaining_on_amortization_schedule,
+                          payroll_growth_assumption, total_amortization_payment_pct = total_amortization_payment_percentage,
+                          total_amo_payment = amortization_payment_total_amount, #Added
+                          total_contribution = total_contribution_dollar,
+                          total_nc_dollar = total_normal_cost_dollar, total_number_of_members,
+                          total_proj_adec_pct = total_projected_actuarial_required_contribution_percentage_of_payroll,
+                          tpl = total_pension_liability_dollar,
+                          npl_pct_down = net_pension_liability_assuming_1_percent_decrease_in_discount_rate, #Added
+                          npl = net_pension_liability_dollar, #Added
+                          npl_pct_up = net_pension_liability_assuming_1_percent_increase_in_discount_rate, #Added
+                          type_of_employees_covered, unfunded_actuarially_accrued_liabilities_dollar,
+                          wage_inflation, region, cpi.change)
+
+  
+  ## Combining ARC & ADEC
+  Data$arc_adec_dollar <- ifelse(is.na(Data$adec1) == TRUE,Data$adec2, Data$adec1)
+  Data$arc_adec_paid_dollar <- ifelse(is.na(Data$arc_paid_dollar) == TRUE, Data$adec_paid_dollar, Data$arc_paid_dollar)
+  
+  Data$fy_contribution <- as.numeric(Data$fy_contribution)
+  Data$year <- as.numeric(Data$year)
+  Data$fy_contribution <- round(Data$fy_contribution, 0)
+  Data <- Data %>% filter(year >= fy) #%>% select(-adec1, -adec2)
+
+  #https://www.urban.org/policy-centers/cross-center-initiatives/state-and-local-finance-initiative/projects/state-fiscal-briefs/florida
+
+  if (isTRUE(expenditure)) {
+   Data$ava <- as.numeric(Data$ava)
+   Data$aal <- as.numeric(Data$aal)
+   Data$state_exp_NASBO <- as.numeric(Data$state_exp_NASBO)
+   Data$state.local_exp_Census <- as.numeric(Data$state.local_exp_Census)
+   Data <- Data %>% group_by(state, year) %>% mutate(ual_exp_NASBO = round((sum(aal)-sum(ava))/(state_exp_NASBO*1000000),2),
+                                                     ual_exp_Census = round((sum(aal)-sum(ava))/(state.local_exp_Census*1000),2))
+  }
+
+  if (is_null(employee)) {
+    employee <- employee
+  }
+  else if (employee == "teacher") {
+    employee <- c("Plan covers teachers")
+  }
+  else if (employee == "state and local") {
+    employee <- c("Plan covers state and local employees")
+  }
+  else if (employee == "police and fire") {
+    employee <- c("Plan covers police and/or fire")
+  }
+  else if (employee == "state") {
+    employee <- c("Plan covers state employees")
+  }
+  else if (employee == "local") {
+    employee <- c("Plan covers local employees")
+  }
+  else if (employee == "state, local, and teachers") {
+    employee <- c("Plan covers state, local and teachers")
+  }
+  if (is_null(employee)) {
+    Data <- data.frame(Data)
+  }
+  else {
+    Data %>% filter(type_of_employees_covered == paste(employee))
+  }
+}
+
+###
+##Pull PERSI data
+##Load list of plans
+pl <- planList()
+
+#PULL DATA
+Data <- pullStateData(2001)
+Data <- filterData2(Data,2001)
+Data <- Data %>% filter(year == 2021)
+
+#View(Data)
+Data <- Data %>% filter(plan_name == "South Carolina Retirement Systems")
+#View(Data)
+plan.name <- c("SCRS")
+
+Data$year <- as.numeric(Data$year)
+Data$mva <- as.numeric(Data$mva)
+Data$aal <- as.numeric(Data$aal)
+Data$npl <- as.numeric(Data$npl)
+Data$unfunded_actuarially_accrued_liabilities_dollar <- as.numeric(Data$unfunded_actuarially_accrued_liabilities_dollar)
+
+#####
+Data$ual <- Data$aal - Data$mva
+Data$funded_ratio <- Data$mva/Data$aal
+
+Data$npl_pct_up <- 16067117000
+sensitivity <- Data %>% mutate_all(as.numeric)  %>% 
+                         select(npl_pct_up, npl,npl_pct_down, mva) %>% mutate_all(as.numeric)
+
+
+sensitivity <- sensitivity %>% mutate(tpl_pct_up = npl_pct_up + mva,
+                               tpl = npl + mva,
+                               tpl_pct_down = npl_pct_down + mva)
+
+Data <- Data %>% select(year, dr, ual,funded_ratio,aal,mva,total_nc_pct,ee_nc_pct) %>% mutate_all(as.numeric)
+### Rediscount function
+
+reDiscount <- function(data, sensitivity){
+  
+ 
+  sens <- sensitivity %>% mutate_all(as.numeric)
+  sens$aal <- as.numeric(data$aal)
+  sens$total_nc_pct <- as.numeric(data$total_nc_pct)
+  sens <- sens %>% mutate(aal.duration = ((tpl_pct_down/tpl_pct_up)^(0.5)-1)*100,
+                          aal.convexity = ((tpl_pct_down*tpl_pct_up)/(tpl^2)-1)*100,
+                          aal.dr1 = aal*((1+aal.duration/100))^(1)*((1+aal.convexity/100))^((1)^2/2),
+                          aal.dr2 = aal*((1+aal.duration/100))^(2)*((1+aal.convexity/100))^((2)^2/2),
+                          aal.dr3 = aal*((1+aal.duration/100))^(3)*((1+aal.convexity/100))^((3)^2/2),
+                          nc.dr1 = total_nc_pct*(1+aal.duration*2/100)^(1),
+                          nc.dr2 = total_nc_pct*(1+aal.duration*2/100)^(2),
+                          nc.dr3 = total_nc_pct*(1+aal.duration*2/100)^(3))
+  sens
+}
+
+redisc <- reDiscount(Data, sensitivity)
+#Create table skeleton
+table <- matrix(NA,4,4)
+
+#Use database numbers to populate/calculate needed values
+table[1:4,1] <- c(seq(as.numeric(Data$dr),0.04, by = -0.01))
+table[1:4,4] <- rep(Data$ee_nc_pct,4)
+table[1:4,2] <- c(Data$total_nc_pct, redisc$nc.dr1, redisc$nc.dr2, redisc$nc.dr3)
+table[1:4,3] <- as.numeric(table[1:4,2])-as.numeric(table[1:4,4])
+table <- data.frame(table)
+
+
+colnames(table) <- c("Discount Rate", 
+                  "Gross Normal Cost", 
+                  "Employer Normal Cost", 
+                  "Employee Normal Cost")
+
+#Format data to %/$ for appearance
+table[1:4,1] <- scales::percent(table$`Discount Rate`, accuracy = 0.1)
+table[1:4,2] <- scales::percent(table$`Gross Normal Cost`, accuracy = 0.1)
+table[1:4,3] <- scales::percent(table$`Employer Normal Cost`, accuracy = 0.1)
+table[1:4,4] <- scales::percent(table$`Employee Normal Cost`, accuracy = 0.1)
 
 
 
@@ -5011,7 +5400,7 @@ palette_reason <- list(Orange="#FF6633",
 
 pw.28 <- round(as.numeric(SalaryData2$PVPenWealth[28])/1000,2)
 pw.32 <- round(as.numeric(SalaryData2$PVPenWealth[31])/1000,2)
-pw.32.p <- round(as.numeric((pw.32/pw.20-1))*100,1)
+pw.32.p <- round(as.numeric((pw.32/pw.28-1))*100,1)
 
 #PULL DATA
 ###################
@@ -5045,7 +5434,7 @@ pwealth
 
 ### Delaying Eligibility for Full Benefits Backloads `r entry` Age New SCRS Hires' Benefits
 
-Only **$`r pw.20`K** is what new Age `r entry` (Class Three) SCRS members will accrue after 28 years on the job (value of future benefits at retirement) .
+Only **$`r pw.28`K** is what new Age `r entry` (Class Three) SCRS members will accrue after 28 years on the job (value of future benefits at retirement) .
 
 </p>
 </p>
