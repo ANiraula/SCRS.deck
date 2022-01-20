@@ -5320,7 +5320,6 @@ colnames(reason.data)[2:3] <- c("Unpaid Interest on Unfunded Liabilities (Cumula
                                 "Unfunded Liability from Other Sources")
 reason.data <- data.table(reason.data)
 reason.data <- data.table(melt(reason.data, id.vars = "year"))
-View(reason.data)
 
 #### GGPLOT
  plotTheme <- ggplot2::theme(   panel.grid = element_blank(),
