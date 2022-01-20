@@ -2920,8 +2920,7 @@ sensitivity <- sensitivity %>% mutate(tpl_pct_up = npl_pct_up + mva,
                                tpl_pct_down = npl_pct_down + mva)
 
 Data <- Data %>% select(year, dr, ual,funded_ratio,aal,mva,total_nc_pct,ee_nc_pct) %>% mutate_all(as.numeric)
-View(Data)
-View(sensitivity)
+
 ### Rediscount function
 
 reDiscount <- function(data, sensitivity){
@@ -4152,6 +4151,9 @@ reason.data$total_normal_cost_percentage * reason.data$covered_payroll_dollar
 
 reason.data <- reason.data %>% replace(is.na(.), 0)
 
+#Adding 2003 data manually
+reason.data$interest_on_debt_dollar[3] <- 228000000
+reason.data$amortization_payment_total_amount[3] <- -245000000
 ### Net Amo
 net.amo <- barPlot(
   data = reason.data, 
@@ -5289,7 +5291,11 @@ reason.data <- pullData(pl, "South Carolina Retirement Systems") %>% filter(year
 
 ### Net Amo
 reason.data$net.amo <- c(reason.data$interest_on_debt_dollar+reason.data$amortization_payment_total_amount)
-reason.data$net.amo[1:3] <- c(-26000000,-6000000,-17000000)
+
+
+reason.data$net.amo[1:3] <- c(0,0,0)
+#Actual Positive Amo
+#reason.data$net.amo[1:3] <- c(-26000000,-6000000,-17000000)
 
 ### UAL
 reason.data$ual <- c(reason.data$actuarially_accrued_liabilities_dollar -
@@ -5314,6 +5320,7 @@ colnames(reason.data)[2:3] <- c("Unpaid Interest on Unfunded Liabilities (Cumula
                                 "Unfunded Liability from Other Sources")
 reason.data <- data.table(reason.data)
 reason.data <- data.table(melt(reason.data, id.vars = "year"))
+View(reason.data)
 
 #### GGPLOT
  plotTheme <- ggplot2::theme(   panel.grid = element_blank(),
