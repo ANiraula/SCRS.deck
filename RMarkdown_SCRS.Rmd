@@ -5011,7 +5011,7 @@ palette_reason <- list(Orange="#FF6633",
 
 pw.28 <- round(as.numeric(SalaryData2$PVPenWealth[28])/1000,2)
 pw.32 <- round(as.numeric(SalaryData2$PVPenWealth[31])/1000,2)
-pw.32.p <- round(as.numeric((pw.32/pw.20-1))*100,1)
+pw.32.p <- round(as.numeric((pw.32/pw.28-1))*100,1)
 
 #PULL DATA
 ###################
@@ -5045,7 +5045,7 @@ pwealth
 
 ### Delaying Eligibility for Full Benefits Backloads `r entry` Age New SCRS Hires' Benefits
 
-Only **$`r pw.20`K** is what new Age `r entry` (Class Three) SCRS members will accrue after 28 years on the job (value of future benefits at retirement) .
+Only **$`r pw.28`K** is what new Age `r entry` (Class Three) SCRS members will accrue after 28 years on the job (value of future benefits at retirement) .
 
 </p>
 </p>
