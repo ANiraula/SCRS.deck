@@ -4446,7 +4446,7 @@ treasury
 
 ### Actual Change in Payroll vs. Assumption (2001-2021) w/ R (linePlot())
 
-```{r payroll, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of SCRS actuarial valuation reports.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
+```{r payroll, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of SCRS actuarial valuation reports. Actual payroll does not include payroll for members in ORP or working retirees.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
 
 pl <- planList()
 
@@ -5045,17 +5045,19 @@ pwealth
 
 ### Delaying Eligibility for Full Benefits Backloads `r entry` Age New SCRS Hires' Benefits
 
-Only **$`r pw.28`K** is what new Age `r entry` (Class Three) SCRS members will accrue after 28 years on the job (value of future benefits at retirement) .
+Only **$`r pw.28`K** is what new Age `r entry` (Class Three) SCRS members will accrue after 28 years on the job (value of future benefits at retirement).
 
 </p>
 </p>
 
--   All new employees Are better off collecting their contributions (with interest), before they qualify for Reduced or Full retirement.
+-   All new employees are better off collecting their own contributions (with credited interest), before they qualify for Reduced or Full Defined Benefits.
 
 </p>
 </p>
 
-But this value spikes to **$`r pw.32`K** or **`r pw.32.p`%** jump after just 4 more years (long enough to receive Full Benefits)
+But this value spikes to **$`r pw.32`K** or **`r pw.32.p`%** jump just after 4 more years (long enough to receive Full Benefits)
+
+-   Such spikes, upon reaching defined thresholds, backloads benefits to the point that only few long-career employees can benefit from, while younger workers often don't.
 
 </p>
 
