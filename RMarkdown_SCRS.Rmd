@@ -2474,29 +2474,34 @@ table
 
 ```
 
-### Current Contributions Are Actuarially Insufficient (2020-2050) w/ R (linePlot())
+### Current Contributions Are Actuarially Insufficient (2021-2051) w/ R (linePlot())
 
 ```{r crises, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project actuarial forecast of SCRS.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
 
-urlfile <- "https://raw.githubusercontent.com/ReasonFoundation/GraphicsR/master/DeckUpdate/crises.csv"
+library(reasontheme)
+library(pensionviewr)
+library(ggplot2)
+library(tidyverse)
+library(tseries)
+library(data.table)
+library(readr)
+library(rsconnect)
+library(dplyr)
+library(plyr)
+
+urlfile <- "https://raw.githubusercontent.com/ANiraula/SCRS_FModel/main/SCRS.FModel_ERC_Statutory.csv"
 stress <- data.frame(
   read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
 )
-#View(stress)
-
+#View(stress[3,2:5])
+stress[3,2:5] <- 0.1556
 
 DPF.data <- data.table(stress)
 colnames(DPF.data) <- c("year",
-                        "baseline", 
-                        "crisis", "2crises", 
-                        "crisis_freeze","2crises_freeze",
-                        "6_constant")
+                        "assumption", "model",
+                        "crisis", "2crises")
 #View(DPF.data)
 
-DPF.data <- DPF.data %>% select("year",
-                        "baseline", "6_constant",
-                        "crisis", "crisis_freeze",
-                        "2crises", "2crises_freeze")
 
 linePlot <- function (data, title = NULL, caption = FALSE, grid = FALSE, 
   treasury = FALSE, inv.returns = TRUE, ticks = TRUE, font = NULL, 
@@ -2508,7 +2513,7 @@ linePlot <- function (data, title = NULL, caption = FALSE, grid = FALSE,
   
    plotTheme <- ggplot2::theme(   panel.grid.major = element_blank(),
                                  panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),
-                                 plot.margin = margin(0, 0,0,0, "cm"),
+                                 plot.margin = margin(0, 0.5,0,0, "cm"),
                                  axis.text.y = element_text(size=12, color = "black"),
                                  axis.text.x = element_text(size=12, color = "black", angle = 0, hjust = 0.5, vjust = -1),
                                  axis.title = element_text(size = 12, face = "bold"),
@@ -2576,15 +2581,16 @@ linePlot <- function (data, title = NULL, caption = FALSE, grid = FALSE,
   ##Crate line types per variable
 data <- as.data.table(data)
   graph <- data.table(melt(data, id.vars = "year"))
+  graph <- graph %>% filter(year > 2020)
   lineColors <- c(palette_reason$Orange, palette_reason$LightOrange, 
-  palette_reason$SatBlue, palette_reason$LightBlue, palette_reason$Yellow, palette_reason$Yellow)
+  palette_reason$SatBlue, palette_reason$LightBlue)#, palette_reason$Yellow, palette_reason$Yellow)
   options(repr.plot.width = 1, repr.plot.height = 0.75)
   ggplot2::ggplot(graph, ggplot2::aes(x = year, y = yaxisScale * 
     value, group = variable, linetype=variable)) + ggplot2::geom_line(ggplot2::aes(colour = str_wrap(factor(variable), 
     str)), size = 1) + 
     ggplot2::geom_hline(yintercept = 0, color = "black") + 
     ggplot2::scale_colour_manual(values = lineColors) + 
-    scale_linetype_manual(values=c("solid", "dashed",  "solid", "dashed","solid","dashed"))+#Assigns line types set to each line
+    scale_linetype_manual(values=c("solid", "dashed",  "solid", "dashed"))+#Assigns line types set to each line
     ggplot2::scale_y_continuous(breaks = seq(yaxisMin, if (!is.null(yaxisMax)) {
       yaxisMax
     }
@@ -2623,15 +2629,13 @@ data <- as.data.table(data)
 
 crises <- linePlot(DPF.data, title = NULL, caption = FALSE, grid = FALSE, 
                   treasury = FALSE, inv.returns = FALSE, ticks = TRUE, font = "Calibri",
-                  yaxisMin = 0, yaxisMax = 30, yaxisSeq = 3,
+                  yaxisMin = 0, yaxisMax = 40, yaxisSeq = 4,
                   yaxisScale = 100, format = "%", str = 80,
                   labelY = "Employer Contribution (% Payroll)", 
                   lab1 = "Baseline",
                   lab2 = "6% Constant Annual Return",
-                  lab3 = "2021-24 Crisis & 6% Returns",
-                  lab4 = "2021-24 Crisis & 6% Returns & 5-Year Contribution Freeze", 
-                  lab5 = "2021-24 Crisis & 2036-39 Crisis & 6% Returns", 
-                  lab6 = "2021-24 Crisis & 2036-39 Crisis & 6% Returns & 5-Year Contribution Freeze")
+                  lab3 = "2022-25 Crisis & 6% Returns",
+                  lab5 = "2022-25 Crisis & 2037-40 Crisis & 6% Returns")
                  
 
 crises
