@@ -2641,6 +2641,173 @@ crises <- linePlot(DPF.data, title = NULL, caption = FALSE, grid = FALSE,
 crises
 ```
 
+### SCRS Solvency Degrades Under Crisis Scenarios (2021-2051) w/ R (linePlot())
+
+```{r fr.crises, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project actuarial forecast of SCRS.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
+
+library(reasontheme)
+library(pensionviewr)
+library(ggplot2)
+library(tidyverse)
+library(tseries)
+library(data.table)
+library(readr)
+library(rsconnect)
+library(dplyr)
+library(plyr)
+
+urlfile <- "https://raw.githubusercontent.com/ANiraula/SCRS_FModel/main/SCRS.FModel_FR_Statutory.csv"
+stress <- data.frame(
+  read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
+)
+#View(stress[3,2:5])
+#View(stress)
+
+DPF.data <- data.table(stress)
+colnames(DPF.data) <- c("year",
+                        "assumption", "model",
+                        "crisis", "2crises")
+#View(DPF.data)
+
+
+linePlot <- function (data, title = NULL, caption = FALSE, grid = FALSE, 
+  treasury = FALSE, inv.returns = TRUE, ticks = TRUE, font = NULL, 
+  yaxisMin = 0, yaxisMax = NULL, yaxisSeq = 5, yaxisScale = 100, 
+  format = NULL, str = 20, labelY = NULL, lab1 = NULL, lab2 = NULL, 
+  lab3 = NULL, lab4 = NULL, lab5 = NULL, lab6 = NULL) 
+{
+  reasontheme::set_reason_theme(style = "slide")
+  
+   plotTheme <- ggplot2::theme(   panel.grid.major = element_blank(),
+                                 panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"),
+                                 plot.margin = margin(0, 0.5,0,0, "cm"),
+                                 axis.text.y = element_text(size=12, color = "black"),
+                                 axis.text.x = element_text(size=12, color = "black", angle = 0, hjust = 0.5, vjust = -1),
+                                 axis.title = element_text(size = 12, face = "bold"),
+                                 legend.text = element_text(size = 12),
+                                 legend.title = element_blank(),
+                                 text = element_text(family = "Calibri"))
+   
+  x <- length(data$year)
+  data <- data.frame(data) %>% dplyr::mutate_all(as.numeric)
+  if (isTRUE(treasury)) {
+    urlfile <- "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/treasury.csv"
+    treasury <- read_csv(url(urlfile), col_names = TRUE, 
+      na = c(""), skip_empty_rows = TRUE, col_types = NULL)
+    treasury$year <- as.numeric(treasury$year)
+    treasury <- treasury %>% filter(year>2000 & year < 2020)
+    data$year <- as.numeric(data$year)
+    treasury <- data.table(treasury %>% filter(year > min(data$year - 
+      1)))
+    data <- data %>% select(year, arr)
+    data <- data.table(data)
+    data <- cbind(data, treasury[, 2])
+    data <- data.frame(data) %>% dplyr::mutate_all(as.numeric)
+    data <- as.data.table(data)
+    data$alt.discount <- NA
+    diff <- (data[year == min(data$year)]$arr - data[year == 
+      min(data$year)]$X30.treasury)
+    data$alt.discount <- data$X30.treasury + diff
+  }
+  geomean <- function(x) {
+    x <- as.vector(na.omit(x))
+    x <- x + 1
+    exp(mean(log(x))) - 1
+  }
+  if (isTRUE(inv.returns)) {
+    data$return_1yr <- as.numeric(data$return_1yr)
+    returns <- data$return_1yr
+    last <- length(returns)
+    rolling <- matrix(NA, last, 1)
+    rolling[last] <- as.numeric(geomean(returns[(last - 
+      9):last]))
+    for (i in 1:(last - 10)) {
+      rolling[last - i] <- geomean(returns[(last - 9 - 
+        i):(last - i)])
+    }
+    rolling <- data.table(rolling)
+    returns[(last - 9):last]
+    returns[(last - 9 + 1):(last - 1)]
+    data <- data.table(cbind(data, rolling))
+    data <- data %>% select(year, return_1yr, ava_return, 
+      arr, V1)
+  }
+  colnames(data) <- c("year", if (!is_null(lab1)) {
+    paste(lab1)
+  }, if (!is_null(lab2)) {
+    paste(lab2)
+  }, if (!is_null(lab3)) {
+    paste(lab3)
+  }, if (!is_null(lab4)) {
+    paste(lab4)
+  }, if (!is_null(lab5)) {
+    paste(lab5)
+  }, if (!is_null(lab6)) {
+    paste(lab6)
+  })
+  ##Crate line types per variable
+data <- as.data.table(data)
+  graph <- data.table(melt(data, id.vars = "year"))
+  graph <- graph %>% filter(year > 2020)
+  lineColors <- c(
+  palette_reason$LightBlue,palette_reason$SatBlue, palette_reason$LightOrange,palette_reason$LightOrange)#, palette_reason$Yellow, palette_reason$Yellow)
+  options(repr.plot.width = 1, repr.plot.height = 0.75)
+  ggplot2::ggplot(graph, ggplot2::aes(x = year, y = yaxisScale * 
+    value, group = variable, linetype=variable)) + ggplot2::geom_line(ggplot2::aes(colour = str_wrap(factor(variable), 
+    str)), size = 1) + 
+    ggplot2::geom_hline(yintercept = 0, color = "black") + 
+    ggplot2::scale_colour_manual(values = lineColors) + 
+    scale_linetype_manual(values=c("solid", "dashed",  "solid", "dashed"))+#Assigns line types set to each line
+    ggplot2::scale_y_continuous(breaks = seq(yaxisMin, if (!is.null(yaxisMax)) {
+      yaxisMax
+    }
+    else {
+      max(graph$value) * yaxisScale * 1.2
+    }, by = yaxisSeq), limits = c(yaxisMin, if (!is.null(yaxisMax)) {
+      yaxisMax
+    } else {
+      max(graph$value) * yaxisScale * 1.2
+    }), labels = function(b) {
+      if (format == "%") {
+        paste0(round(b, 0), "%")
+      }
+      else if (format == "$") {
+        paste0("$", round(b, 0))
+      }
+      else {
+        paste0(format, round(b, 0))
+      }
+    }, expand = c(0, 0)) + ggplot2::scale_x_continuous(breaks = seq(min(graph$year), 
+    max(graph$year), by = 2), expand = c(0, 0)) + labs(x = element_blank(), 
+    y = labelY)+
+    theme(legend.direction = "vertical", legend.box = "horizontal", 
+    legend.position = c(1.04, 0.14)) + labs(title = paste(title), caption = ifelse(isTRUE(caption), 
+    paste("reason.org/pensions"), paste(""))) + ggplot2::theme(axis.ticks = if (isFALSE(ticks)) {
+    ggplot2::element_blank()
+  }
+  else {
+    ggplot2::element_line()
+  }) + ggplot2::theme(axis.ticks.x = element_line(size = 0.5, 
+    color = "black")) + ggplot2::theme(axis.ticks.y = element_line(size = 0.5, 
+    color = "black")) + ggplot2::theme(panel.grid.major.y = element_line(colour = ifelse(isTRUE(grid), 
+    paste(palette_reason$SpaceGrey), "white"), size = (2))) +
+     plotTheme
+}
+
+fr.crises <- linePlot(DPF.data, title = NULL, caption = FALSE, grid = FALSE, 
+                  treasury = FALSE, inv.returns = FALSE, ticks = TRUE, font = "Calibri",
+                  yaxisMin = 0, yaxisMax = 120, yaxisSeq = 10,
+                  yaxisScale = 100, format = "%", str = 80,
+                  labelY = "Funded Status (Actuarial Value)", 
+                  lab1 = "Baseline (Statutory)",
+                  lab2 = "6% Constant Annual Return (Statutory)",
+                  lab3 = "2022-25 Crisis & 6% Returns (Statutory)",
+                  lab5 = "2022-25 Crisis & 2037-40 Crisis & 6% Returns (Statutory)")
+                 
+
+fr.crises
+```
+
 ### SCRS Unfunded Liability Sensitivity to DR Changes 2021 w/ R (flextable())
 
 ```{r}
