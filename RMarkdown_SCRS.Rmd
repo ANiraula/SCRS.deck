@@ -2493,8 +2493,10 @@ urlfile <- "https://raw.githubusercontent.com/ANiraula/SCRS_FModel/main/SCRS.FMo
 stress <- data.frame(
   read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
 )
-#View(stress[3,2:5])
-stress[3,2:5] <- 0.1556
+#View(stress[,2])
+stress[1:4,2] <- seq(0.1556, 0.1856, by = 0.01)
+stress[5:20,2] <- 0.1856
+stress[21:33,2] <- seq(0.1856, 0.0656, by = -0.01)
 
 DPF.data <- data.table(stress)
 colnames(DPF.data) <- c("year",
@@ -2781,7 +2783,7 @@ data <- as.data.table(data)
     max(graph$year), by = 2), expand = c(0, 0)) + labs(x = element_blank(), 
     y = labelY)+
     theme(legend.direction = "vertical", legend.box = "horizontal", 
-    legend.position = c(1.04, 0.14)) + labs(title = paste(title), caption = ifelse(isTRUE(caption), 
+    legend.position = c(1.01, 0.14)) + labs(title = paste(title), caption = ifelse(isTRUE(caption), 
     paste("reason.org/pensions"), paste(""))) + ggplot2::theme(axis.ticks = if (isFALSE(ticks)) {
     ggplot2::element_blank()
   }
