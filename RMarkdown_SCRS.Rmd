@@ -2204,6 +2204,7 @@ Tabs <- excel_sheets(FileName)
 
 #Set default return matrix for which the avg is calculated
 ReturnMatrix <- TemplateData[,1:4]
+
 #clean it up
 ReturnMatrix[,3:4] <- as.double(0)
 
@@ -2264,6 +2265,9 @@ GetArithReturn <- function(Variance, Target){
   return(ArithReturn)
 }
 #
+
+#View(read_excel(FileName, sheet = Tabs[9]))
+
 #Go through each tab. Each tab is each bank
 #First Tab is FieldList, so start at 2
 for (i in 2:(length(Tabs))){
@@ -2292,6 +2296,7 @@ for (i in 2:(length(Tabs))){
     }
   }
   
+  #View(AnnualVolatility*2)
   #Do this for each bank and for each component of the output - summary, percentile, probabilities
   #For Fund details, the volatility for the whole is given, no need for calc
   if(Tabs[i] == 'Plan Assumptions'){
@@ -2322,7 +2327,7 @@ for (i in 2:(length(Tabs))){
   
   #simulate the returns
   randomreturn <- rnorm(NumberofYears, mean = AnnualMeanReturn, sd = AnnualVolatility)
-  georeturnsim <- replicate(n = NumberofSimulations,georeturn(rnorm(NumberofYears, mean = AnnualMeanReturn, sd = AnnualVolatility)))
+  georeturnsim <- replicate(n = NumberofSimulations,georeturn(rnorm(NumberofYears, mean =    AnnualMeanReturn, sd = AnnualVolatility)))
   
   #Simulation Data for Ridgeline plot later
   Temp <- as.data.frame(georeturnsim)
@@ -2366,23 +2371,7 @@ SummaryTab <- t(SummaryTab)
 SimulationData <- SimulationData %>% 
   arrange(`Mean Return`) %>% 
   mutate(`Plan Name` = factor(`Plan Name`, levels = unique(`Plan Name`), ordered = T)) 
-
 #Plot the distribution of simulated expected returns
-ggplot(SimulationData, aes(x = Data, y = `Plan Name`, fill = `Plan Name`)) +
-  geom_density_ridges(rel_min_height = 0.01,
-                      scale = 3,
-                      alpha = 0.7) +
-  geom_vline(xintercept = FundARR, 
-             linetype = "dashed",
-             color = "orange",
-             size = 1) +
-  scale_x_continuous(breaks = seq(-0.01, 0.11, 0.02),
-                     labels = percent_format(accuracy = 1),
-                     limits = c(-0.05,0.15), 
-                     expand = c(0, 0)) +
-  labs(x = "Expected Return", y = NULL) + 
-  theme_ridges() + 
-  theme(legend.position = "none") 
 
 #ggsave("AvgReturn Distribution.png", width = 6, height = 4, dpi = 800)  
 
@@ -5025,7 +5014,6 @@ linePlot <- function (data, title = NULL, caption = FALSE, grid = FALSE,
     paste(palette_reason$SpaceGrey), "white"), size = (1))) + plotTheme
 }
 
-
 inflation <- linePlot(Data, title = NULL, caption = FALSE, grid = FALSE, 
                   treasury = FALSE, inv.returns = FALSE, ticks = TRUE, font = "Calibri",
                   yaxisMin = -1, yaxisMax = 6, yaxisSeq = 1,
@@ -5218,7 +5206,7 @@ pwealth
 
 ### Delaying Eligibility for Full Benefits Backloads `r entry` Age New SCRS Hires' Benefits
 
-Only **$`r pw.28`K** is what new Age `r entry` (Class Three) SCRS members will accrue after 28 years on the job (value of future benefits at retirement).
+Only **$`r pw.28`K** is what new Age `r entry` (Class Three) SCRS members will accrue after 28 years on the job (accrued benefits valued at retirement).
 
 </p>
 </p>
@@ -5228,9 +5216,10 @@ Only **$`r pw.28`K** is what new Age `r entry` (Class Three) SCRS members will a
 </p>
 </p>
 
-But this value spikes to **$`r pw.32`K** or **`r pw.32.p`%** jump just after 4 more years (long enough to receive Full Benefits)
+Value of accrued benefits jumps to **$`r pw.32`K** (or by **`r pw.32.p`%**) just after 4 more years (long enough to receive Unreduced/Full benefits)
 
--   Such spikes, upon reaching defined thresholds, backloads benefits to the point that only few long-career employees can benefit from, while younger workers often don't.
+-   Such spikes are caused by employer awarding a significantly higher total benefits in the employee's later years of service.
+-   And backloads benefits to the point that only few long-career employees will benefit from (and collect), while younger workers often don't.
 
 </p>
 
