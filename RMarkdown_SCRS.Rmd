@@ -5145,7 +5145,6 @@ library(plyr)
 
 
 SalaryData2 <- read_csv("SCRS_BModel.csv")
-#View(SalaryData2) 
 
 e.age <- unique(SalaryData2$entry_age)
 SalaryData2 <- data.frame(SalaryData2)
@@ -5170,8 +5169,9 @@ palette_reason <- list(Orange="#FF6633",
                        SatBlue = "#3366CC", 
                        Green = "#669900",LightGreen = "#00CC66", Red = "#CC0000",LightRed="#FF0000")
 
-pw.28 <- round(as.numeric(SalaryData2$PVPenWealth[28])/1000,2)
-pw.32 <- round(as.numeric(SalaryData2$PVPenWealth[31])/1000,2)
+pw.28 <- round(as.numeric(SalaryData2$PVPenWealth[29])/1000,2)
+pw.32 <- round(as.numeric(SalaryData2$PVPenWealth[33])/1000,2)
+age <- SalaryData2$Age[33]
 pw.32.p <- round(as.numeric((pw.32/pw.28-1))*100,1)
 
 #PULL DATA
@@ -5216,7 +5216,7 @@ Only **$`r pw.28`K** is what new Age `r entry` (Class Three) SCRS members will a
 </p>
 </p>
 
-Value of accrued benefits jumps to **$`r pw.32`K** (or by **`r pw.32.p`%**) just after 4 more years (long enough to receive Unreduced/Full benefits)
+Value of accrued benefits jumps to **$`r pw.32`K** (or by **`r pw.32.p`%**) just after 4 more years (Age **Age`r age`**, long enough to receive Unreduced/Full benefits)
 
 -   Such spikes are caused by employer awarding a significantly higher total benefits in the employee's later years of service.
 -   And backloads benefits to the point that only few long-career employees will benefit from (and collect), while younger workers often don't.
