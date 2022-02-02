@@ -5255,10 +5255,10 @@ palette_reason <- list(Orange="#FF6633",
 
 vest <- 8
 vest.prob <- round(as.numeric(SalaryData2$RemainingProb[vest+1]),3)
-vest.20 <- round(as.numeric(SalaryData2$RemainingProb[20]),3)
+vest.20 <- round(as.numeric(SalaryData2$RemainingProb[21]),3)
 retire.prob <- data.table(SalaryData2 %>% filter(YOS+Age >= 90) %>% select(RemainingProb))
 retire.prob <- round(as.numeric(retire.prob[1]),3)
-View(SalaryData2 %>% select(Age, YOS, RemainingProb))
+#View(SalaryData2 %>% select(Age, YOS, RemainingProb))
 
 #PULL DATA
 ###################
