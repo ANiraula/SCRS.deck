@@ -5216,10 +5216,10 @@ Only **$`r pw.28`K** is what new Age `r entry` (Class Three) SCRS members will a
 </p>
 </p>
 
-Value of accrued benefits jumps to **$`r pw.32`K** (or by **`r pw.32.p`%**) just after 4 more years (Age **Age`r age`**, long enough to receive Unreduced/Full benefits)
+Value of accrued benefits jumps to **$`r pw.32`K** (or by **`r pw.32.p`%**) just after 4 more years (Age **`r age`**, long enough to receive Unreduced/Full benefits)
 
 -   Such spikes are caused by employer awarding a significantly higher total benefits in the employee's later years of service.
--   And backloads benefits to the point that only few long-career employees will benefit from (and collect), while younger workers often don't.
+-   This backloading usually benefits only small portion of long-career employees, leaving most of younger workers behind.
 
 </p>
 
