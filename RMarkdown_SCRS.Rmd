@@ -5176,18 +5176,18 @@ pw.32.p <- round(as.numeric((pw.32/pw.28-1))*100,1)
 
 #PULL DATA
 ###################
-pwealth <- ggplot(SalaryData2, aes(Age,PVPenWealth/1000))+
+pwealth <- ggplot(SalaryData2, aes(YOS,PVPenWealth/1000))+
   geom_line(aes(group = 1,
-                text = paste0("Age: ", Age,
+                text = paste0("YOS: ", YOS,
                               "<br>Pension Wealth: $",round(PVPenWealth/1000,1), " Thousands")),size = 1.25, color = palette_reason$SatBlue)+
-  geom_line(aes(Age, RemainingProb* (y_max/1000),
+  geom_line(aes(YOS, RemainingProb* (y_max/1000),
                 group = 2,
-                text = paste0("Age: ", Age,
+                text = paste0("YOS: ", YOS,
                               "<br>Members Remaining: ", round(RemainingProb*100,1), "%")), size = 1.25, color = palette_reason$LightBlue, linetype = "dashed")+
-  scale_x_continuous(breaks = seq(0, 80, by = 10),labels = function(x) paste0(x),
+  scale_x_continuous(breaks = seq(0, 50, by = 5),labels = function(x) paste0(x),
                      name = paste0("Age (Entry age at ", entry, ")"), expand = c(0,0)) +
   
-  scale_y_continuous(breaks = seq(0, 5000, by = 100),limits = c(0, y_max/1000*1.05), labels = function(x) paste0("$",x),
+  scale_y_continuous(breaks = seq(0, 5000, by = 50),limits = c(0, y_max/1000*1.05), labels = function(x) paste0("$",x),
                      sec.axis = sec_axis(~./(y_max/100), breaks = scales::pretty_breaks(n = 10), name = "Percent of Members Remaining",
                                          labels = function(b) paste0(round(b*1000, 0), "%")), 
                      name = "Present Value of Pension Wealth ($Thousands)", expand = c(0,0)) +
@@ -5263,11 +5263,11 @@ retire.prob <- round(as.numeric(retire.prob[1]),3)
 #PULL DATA
 ###################
 ret <- ggplot(SalaryData2)+
- geom_line(aes(Age, RemainingProb,
+ geom_line(aes(YOS, RemainingProb,
                 group = 2,
-                text = paste0("Age: ", Age,
+                text = paste0("YOS: ", YOS,
                               "<br>Members Remaining: ", round(RemainingProb*100,1), "%")), size = 1.25, color = palette_reason$LightBlue, linetype = "dashed")+
-  scale_x_continuous(breaks = seq(0, 100, by = 10),labels = function(x) paste0(x),
+  scale_x_continuous(breaks = seq(0, 50, by = 5),labels = function(x) paste0(x),
                      name = paste0("Age (Entry age at ", entry, ")"), expand = c(0,0)) +
   
   scale_y_continuous(breaks = scales::pretty_breaks(n = 10), name = "Percent of Members Remaining",
