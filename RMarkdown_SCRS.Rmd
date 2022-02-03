@@ -3242,13 +3242,11 @@ Data$funded_ratio <- Data$mva/Data$aal
 
 Data$npl_pct_up <- 16067117000
 sensitivity <- Data %>% select(npl_pct_up, npl,npl_pct_down, mva) %>% mutate_all(as.numeric)
-View(sensitivity)
 Data <- Data %>% select(year, dr, ual,funded_ratio,aal,mva,total_nc_pct,ee_nc_pct) %>% mutate_all(as.numeric)
 
 ### Rediscount function
 reDiscount <- function(data, sensitivity){
   
- 
   sens <- sensitivity %>% mutate_all(as.numeric)
   sens$aal <- as.numeric(data$aal)
   sens$total_nc_pct <- as.numeric(data$total_nc_pct)
