@@ -2188,6 +2188,20 @@ library(ggplot2)
 library(scales)
 #setwd("/Users/anilniraula/databaseR")
 #
+
+palette_reason <- list(Orange="#FF6633",
+                       LightOrange="#FF9900",
+                       DarkGrey="#333333", 
+                       LightGrey= "#CCCCCC", 
+                       SpaceGrey ="#A69FA1",
+                       DarkBlue="#0066CC", 
+                       GreyBlue= "#6699CC", 
+                       Yellow= "#FFCC33",
+                       LightBlue = "#66B2FF", 
+                       SatBlue = "#3366CC", 
+                       Green = "#669900",LightGreen = "#00CC66", Red = "#CC0000",LightRed="#FF0000")
+
+##############
 #user can change these values
 FileName <- "SCRS_Return_Data.xlsx"
 NumberofYears <- 20
@@ -2286,6 +2300,7 @@ for (i in 2:(length(Tabs))){
       RowIndex <- which(TabData[,1] == as.character(FieldList[j,1]))
       #Volatility
       ReturnMatrix[j,3] <- as.double(TabData[RowIndex,4])
+   
       #Returns
       ReturnMatrix[j,4] <- as.double(TabData[RowIndex,3])
       
@@ -2328,7 +2343,7 @@ for (i in 2:(length(Tabs))){
   
   #simulate the returns
   randomreturn <- rnorm(NumberofYears, mean = AnnualMeanReturn, sd = AnnualVolatility)
-  georeturnsim <- replicate(n = NumberofSimulations,georeturn(rnorm(NumberofYears, mean =    AnnualMeanReturn, sd = AnnualVolatility)))
+  georeturnsim <- replicate(n = NumberofSimulations,georeturn(rnorm(NumberofYears, mean =       AnnualMeanReturn, sd = AnnualVolatility)))
   
   #Simulation Data for Ridgeline plot later
   Temp <- as.data.frame(georeturnsim)
@@ -2416,9 +2431,9 @@ colnames(table) <- c("Possible Rates of Return",
                      "Based on SCRS Assumptions",
                      "SCRS Historical Returns",
                      "Research Affiliates 10-Year Forecast",
+                     "JP Morgan 10-15 Year Forecast",
                      "BNY Mellon 10-Year Forecast",
                      "Horizon 10-Year Market Forecast",
-                     "JP Morgan 10-15 Year Forecast",
                      "Horizon 20-Year Market Forecast",
                      "BlackRock 20-Year Forecast")
 #colnames(table)[1] <- "Year"
@@ -2795,7 +2810,6 @@ fr.crises <- linePlot(DPF.data, title = NULL, caption = FALSE, grid = FALSE,
                   lab3 = "2022-25 Crisis & 6% Returns (Statutory)",
                   lab5 = "2022-25 Crisis & 2037-40 Crisis & 6% Returns (Statutory)")
                  
-View(DPF.data)
 fr.crises
 ```
 
