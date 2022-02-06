@@ -2478,7 +2478,7 @@ table <- width(table, j = 1:9, width = 1)
 table
 ```
 
-### Current Contributions Are Actuarially Insufficient (2021-2051) w/ R (linePlot())
+### Current Contributions Are Actuarially Insufficient (2021-2052) w/ R (linePlot())
 
 ```{r crises, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project actuarial forecast of SCRS.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
 
@@ -2497,16 +2497,20 @@ urlfile <- "https://raw.githubusercontent.com/ANiraula/SCRS_FModel/main/SCRS.FMo
 stress <- data.frame(
   read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
 )
-#View(stress)
-stress[1:4,2] <- seq(0.1556, 0.1856, by = 0.01)
+
+stress[1:4,2:5] <- seq(0.1556, 0.1856, by = 0.01)
 stress[5:20,2] <- 0.1856
-stress[21:33,2] <- seq(0.1856, 0.0656, by = -0.01)
+#stress[21:33,2] <- seq(0.1856, 0.0656, by = -0.01)
 
 DPF.data <- data.table(stress)
 colnames(DPF.data) <- c("year",
                         "assumption", "model",
                         "crisis", "2crises")
 #View(DPF.data)
+
+DPF.data <- DPF.data %>% select("year",
+                        "assumption", "model",
+                         "2crises","crisis")
 
 
 linePlot <- function (data, title = NULL, caption = FALSE, grid = FALSE, 
@@ -2588,15 +2592,15 @@ linePlot <- function (data, title = NULL, caption = FALSE, grid = FALSE,
 data <- as.data.table(data)
   graph <- data.table(melt(data, id.vars = "year"))
   graph <- graph %>% filter(year > 2020)
-  lineColors <- c(palette_reason$Orange, palette_reason$LightOrange, 
-  palette_reason$SatBlue, palette_reason$LightBlue)#, palette_reason$Yellow, palette_reason$Yellow)
+  lineColors <- c(
+ palette_reason$LightBlue,  palette_reason$SatBlue, palette_reason$LightOrange,palette_reason$LightOrange)#, palette_reason$Yellow, palette_reason$Yellow)
   options(repr.plot.width = 1, repr.plot.height = 0.75)
   ggplot2::ggplot(graph, ggplot2::aes(x = year, y = yaxisScale * 
     value, group = variable, linetype=variable)) + ggplot2::geom_line(ggplot2::aes(colour = str_wrap(factor(variable), 
     str)), size = 1) + 
     ggplot2::geom_hline(yintercept = 0, color = "black") + 
     ggplot2::scale_colour_manual(values = lineColors) + 
-    scale_linetype_manual(values=c("solid", "dashed",  "solid", "dashed"))+#Assigns line types set to each line
+    scale_linetype_manual(values=c("solid", "dashed",  "dashed","solid"))+#Assigns line types set to each line
     ggplot2::scale_y_continuous(breaks = seq(yaxisMin, if (!is.null(yaxisMax)) {
       yaxisMax
     }
@@ -2620,7 +2624,7 @@ data <- as.data.table(data)
     max(graph$year), by = 2), expand = c(0, 0)) + labs(x = element_blank(), 
     y = labelY)+
     theme(legend.direction = "vertical", legend.box = "horizontal", 
-    legend.position = c(1.05, 0.14)) + labs(title = paste(title), caption = ifelse(isTRUE(caption), 
+    legend.position = c(0.9, 0.9)) + labs(title = paste(title), caption = ifelse(isTRUE(caption), 
     paste("reason.org/pensions"), paste(""))) + ggplot2::theme(axis.ticks = if (isFALSE(ticks)) {
     ggplot2::element_blank()
   }
@@ -2635,19 +2639,19 @@ data <- as.data.table(data)
 
 crises <- linePlot(DPF.data, title = NULL, caption = FALSE, grid = FALSE, 
                   treasury = FALSE, inv.returns = FALSE, ticks = TRUE, font = "Calibri",
-                  yaxisMin = 0, yaxisMax = 40, yaxisSeq = 4,
+                  yaxisMin = 0, yaxisMax = 36, yaxisSeq = 4,
                   yaxisScale = 100, format = "%", str = 80,
                   labelY = "Employer Contribution (% Payroll)", 
-                  lab1 = "Baseline",
-                  lab2 = "6% Constant Annual Return",
-                  lab3 = "2022-25 Crisis & 6% Returns",
-                  lab5 = "2022-25 Crisis & 2037-40 Crisis & 6% Returns")
+                  lab1 = "Baseline (Statutory)",
+                  lab2 = "6% Constant Annual Return (ADEC)",
+                  lab3 = "2022-25 Crisis & 2037-40 Crisis & 6% Returns (ADEC)",
+                  lab5 = "2022-25 Crisis & 6% Returns (ADEC)")
                  
 
 crises
 ```
 
-### SCRS Solvency Degrades Under Crisis Scenarios (2021-2051) w/ R (linePlot())
+### SCRS Solvency Degrades Under Crisis Scenarios (2021-2052) w/ R (linePlot())
 
 ```{r fr.crises, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project actuarial forecast of SCRS.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
 
@@ -2674,6 +2678,11 @@ colnames(DPF.data) <- c("year",
                         "assumption", "model",
                         "crisis", "2crises")
 #View(DPF.data)
+
+DPF.data <- DPF.data %>% select("year",
+                        "assumption", "model",
+                         "2crises","crisis")
+
 
 
 linePlot <- function (data, title = NULL, caption = FALSE, grid = FALSE, 
@@ -2763,7 +2772,7 @@ data <- as.data.table(data)
     str)), size = 1) + 
     ggplot2::geom_hline(yintercept = 0, color = "black") + 
     ggplot2::scale_colour_manual(values = lineColors) + 
-    scale_linetype_manual(values=c("solid", "dashed",  "solid", "dashed"))+#Assigns line types set to each line
+    scale_linetype_manual(values=c("solid", "dashed",  "dashed","solid"))+#Assigns line types set to each line
     ggplot2::scale_y_continuous(breaks = seq(yaxisMin, if (!is.null(yaxisMax)) {
       yaxisMax
     }
@@ -2807,13 +2816,13 @@ fr.crises <- linePlot(DPF.data, title = NULL, caption = FALSE, grid = FALSE,
                   labelY = "Funded Status (Actuarial Value)", 
                   lab1 = "Baseline (Statutory)",
                   lab2 = "6% Constant Annual Return (Statutory)",
-                  lab3 = "2022-25 Crisis & 6% Returns (Statutory)",
-                  lab5 = "2022-25 Crisis & 2037-40 Crisis & 6% Returns (Statutory)")
+                  lab3 = "2022-25 Crisis & 2037-40 Crisis & 6% Returns (Statutory)",
+                  lab5 = "2022-25 Crisis & 6% Returns (Statutory)")
                  
 fr.crises
 ```
 
-### Pension Debt Will Likely Grow (2021-2051) w/ R (linePlot())
+### Pension Debt Will Likely Grow (2021-2052) w/ R (linePlot())
 
 ```{r ual, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project actuarial forecast of SCRS.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
 
@@ -2832,7 +2841,6 @@ urlfile <- "https://raw.githubusercontent.com/ANiraula/SCRS_FModel/main/SCRS.FMo
 stress <- data.frame(
   read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
 )
-#View(stress)
 #stress[1:4,2] <- seq(0.1556, 0.1856, by = 0.01)
 #stress[5:20,2] <- 0.1856
 #stress[21:33,2] <- seq(0.1856, 0.0656, by = -0.01)
@@ -2842,7 +2850,9 @@ colnames(DPF.data) <- c("year",
                         "assumption", "model",
                         "crisis", "2crises")
 #View(DPF.data)
-
+DPF.data <- DPF.data %>% select("year",
+                        "assumption", "model",
+                         "2crises","crisis")
 
 linePlot <- function (data, title = NULL, caption = FALSE, grid = FALSE, 
   treasury = FALSE, inv.returns = TRUE, ticks = TRUE, font = NULL, 
@@ -2923,15 +2933,15 @@ linePlot <- function (data, title = NULL, caption = FALSE, grid = FALSE,
 data <- as.data.table(data)
   graph <- data.table(melt(data, id.vars = "year"))
   graph <- graph %>% filter(year > 2020)
-  lineColors <- c(palette_reason$Orange, palette_reason$LightOrange, 
-  palette_reason$SatBlue, palette_reason$LightBlue)#, palette_reason$Yellow, palette_reason$Yellow)
+   lineColors <- c(
+  palette_reason$LightBlue,palette_reason$SatBlue, palette_reason$LightOrange,palette_reason$LightOrange)#, palette_reason$Yellow, palette_reason$Yellow)
   options(repr.plot.width = 1, repr.plot.height = 0.75)
   ggplot2::ggplot(graph, ggplot2::aes(x = year, y = yaxisScale * 
     value, group = variable, linetype=variable)) + ggplot2::geom_line(ggplot2::aes(colour = str_wrap(factor(variable), 
     str)), size = 1) + 
     ggplot2::geom_hline(yintercept = 0, color = "black") + 
     ggplot2::scale_colour_manual(values = lineColors) + 
-    scale_linetype_manual(values=c("solid", "dashed",  "solid", "dashed"))+#Assigns line types set to each line
+    scale_linetype_manual(values=c("solid", "dashed",  "dashed","solid"))+#Assigns line types set to each line
     ggplot2::scale_y_continuous(breaks = seq(yaxisMin, if (!is.null(yaxisMax)) {
       yaxisMax
     }
@@ -2955,7 +2965,7 @@ data <- as.data.table(data)
     max(graph$year), by = 2), expand = c(0, 0)) + labs(x = element_blank(), 
     y = labelY)+
     theme(legend.direction = "vertical", legend.box = "horizontal", 
-    legend.position = c(1.05, 0.14)) + labs(title = paste(title), caption = ifelse(isTRUE(caption), 
+    legend.position = c(1.5, 1.5)) + labs(title = paste(title), caption = ifelse(isTRUE(caption), 
     paste("reason.org/pensions"), paste(""))) + ggplot2::theme(axis.ticks = if (isFALSE(ticks)) {
     ggplot2::element_blank()
   }
@@ -2975,8 +2985,8 @@ ual <- linePlot(DPF.data, title = NULL, caption = FALSE, grid = FALSE,
                   labelY = "Unfunded Actuarial Liability (in $Billions)", 
                   lab1 = "Baseline",
                   lab2 = "6% Constant Annual Return",
-                  lab3 = "2022-25 Crisis & 6% Returns",
-                  lab5 = "2022-25 Crisis & 2037-40 Crisis & 6% Returns")
+                  lab3 = "2022-25 Crisis & 2037-40 Crisis & 6% Returns",
+                  lab5 = "2022-25 Crisis & 6% Returns")
                  
 
 ual
