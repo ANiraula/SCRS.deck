@@ -5597,7 +5597,7 @@ SalaryData2$entry_age <- as.numeric(SalaryData2$entry_age)
 # #View(SalaryData2)
 # 
 entry <- 27
-SalaryData2 <- SalaryData2 %>% filter(entry_age == entry)
+SalaryData2 <- SalaryData2 
 SalaryData2 <- SalaryData2 %>% filter(Age < 81)
 SalaryData2$PVPenWealth <- as.numeric(SalaryData2$RealPenWealth)
 y_max <- max(SalaryData2$PVPenWealth)
