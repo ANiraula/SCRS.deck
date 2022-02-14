@@ -23,8 +23,6 @@ knitr::opts_chunk$set(
   #Source line
   #Header
   
-  
-  
 )
 
 year <- 2021
@@ -83,9 +81,10 @@ rm(list = ls())
 #library(devtools)
 #devtools::install_github("ReasonFoundation/reasontheme",force = TRUE)
 #devtools::install_github("ReasonFoundation/pensionviewr", force = TRUE)
-#devtools::install_github(
-#  "ANiraula/pensionviewr_private",
-#   ref = "master", auth_token = "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")
+# devtools::install_github(
+#   "ANiraula/pensionviewr_private",
+#    ref = "master", auth_token = "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")
+
 library(reasontheme)
 library(pensionviewr)
 library(ggplot2)
@@ -760,6 +759,18 @@ library(png)
 
 ###### glPlot() Function #####
 
+palette_reason <- list(Orange="#FF6633",
+                       LightOrange="#FF9900",
+                       DarkGrey="#333333", 
+                       LightGrey= "#CCCCCC", 
+                       SpaceGrey ="#A69FA1",
+                       DarkBlue="#0066CC", 
+                       GreyBlue= "#6699CC", 
+                       Yellow= "#FFCC33",
+                       LightBlue = "#66B2FF", 
+                       SatBlue = "#3366CC", 
+                       Green = "#669900",LightGreen = "#00CC66", Red = "#CC0000",LightRed="#FF0000")
+
 url = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/apps/SCRS_GL.csv" 
 urlfile=url
 data <- read_csv(url(urlfile), col_names = TRUE, na = c(""), skip_empty_rows = TRUE, col_types = NULL)
@@ -977,59 +988,6 @@ replace(is.na(.), 0)
 
     </p>
 
-### Compound Net Change to UAL w/ R (barPlot())
-
-```{r, dpi = 400, echo = FALSE, fig.cap = "Source: Pension Integrity Project analysis of SCRS actuarial valuation reports.", compoundGL,fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
-
-rm(list=ls())
-library(reasontheme)
-library(pensionviewr)
-library(ggplot2)
-library(tidyverse)
-library(tseries)
-library(data.table)
-library(readr)
-library(rsconnect)
-library(dplyr)
-library(plyr)
-library(DT)
-library(scales)
-
-######################
-####### BARPLOT ######
-######################
-
-#### Compound GainLoss
-compoundGL <- barPlot(
-  
-  data = NULL, 
-  net.amo = FALSE, 
-  contributions = FALSE, 
-  compound.gl = TRUE,
-  gl.url = "https://raw.githubusercontent.com/ReasonFoundation/GraphicsR/master/PERSI_GL2.csv",
-  str = 20,
-  stochastic = FALSE, 
-  stochastic.url = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/perctest2.csv",
-  stochastic.alpha = 0.40,
-  Ymax = 4,
-  Ymin = -2,
-  Ybreak = 1,
-  yaxisScale = 1/1000000000, 
-  interactive = FALSE,
-  font = "Calibri",
-  lab1 = "Investment Experience", 
-  lab2 = "Benefit Changes",
-  lab3 = "Changes to Actuarial Methods & Assumptions",
-  lab4 = "Deviations from Demographic Assumptions",
-  lab5 = "Negative Amortization",
-  lab6 = "Gains From Pay Increases Not Given",
-  lab7 = "Net Change to Unfunded Liability",
-  lab8 = NULL,
-  lab9 = NULL)
-
-compoundGL
-```
-
 ### Make up of Pension Contributions w/ R (flextable())
 
 ```{r}
@@ -1048,6 +1006,19 @@ library(dplyr)
 library(plyr)
 library(DT)
 library(scales)
+
+
+palette_reason <- list(Orange="#FF6633",
+                       LightOrange="#FF9900",
+                       DarkGrey="#333333", 
+                       LightGrey= "#CCCCCC", 
+                       SpaceGrey ="#A69FA1",
+                       DarkBlue="#0066CC", 
+                       GreyBlue= "#6699CC", 
+                       Yellow= "#FFCC33",
+                       LightBlue = "#66B2FF", 
+                       SatBlue = "#3366CC", 
+                       Green = "#669900",LightGreen = "#00CC66", Red = "#CC0000",LightRed="#FF0000")
 
 pullStateData <- function (FY)
 {
@@ -3366,366 +3337,6 @@ table <-  table[1:4,1:4] %>%
 table
 ```
 
-### 30-Year Employer Contribution Forecast w/ R (barPlot())
-
-```{r stochastic, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project actuarial forecast of SCRS.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
-
-rm(list=ls())
-###Load/install packages
-
-#To install `reasontheme` & `pensionviewr` packages you first want to load `devtools`
-#install.packages('devtools')
-#library(devtools)
-
-#devtools::install_github("ReasonFoundation/reasontheme",force = TRUE)
-#devtools::install_github("ReasonFoundation/pensionviewr", force = TRUE)
-library(reasontheme)
-library(pensionviewr)
-#library(janitor)
-library(grid)
-library(tidyverse)
-#library(openxlsx)
-library(tseries)
-library(plyr)
-#library(ggplot2)
-library(data.table)
-library(openxlsx)
-#library(readr)
-library(rsconnect)
-library(base64enc)
-#Shiny
-library(shiny)
-library(shinyWidgets)
-#library(shinyFiles)
-library(DT)
-library(plotly)
-library(rlang)
-library(purrr)
-library(rpart)
-library(vip)
-
-#View(pl <- planList())
-#x <- pullStateData(2001)
-#view <- masterView("Reason", TRUE)
-#View(view)
-
-##1. See what G/L columns consistently have data/most data
-#Pull, but not use, "actuarial_experience_dollar" (aggregated)
-##2. If Interest_on_Debt is not available? Calculate?
-##3. If "amortization_payment_total_amount"is not available? Calculate?
-##4. Do Excel G/L matches Database results & UAL change?
-
-####
-#Some columns are not filled (especially demographic (e.g. mortality, new entrants, disability, payroll))
-#Look into the Code aggregating Survival, Mortality, Survival, Disability data for actives, retired, inactives, total
-#Compare Net Change to UAL vs. Actual UAL change for 5-10 plans
-
-#Pull plan-specific data from the database
-pl <- planList()
-reason.data <- pullData(pl, "Idaho Public Employee Retirement System") %>% filter(year > 2000 & !duplicated(year))# (2002-2020)
-
-#reason.data <- pullData(pl, "Louisiana State Employees Retirement System")# (2002-2019)
-#reason.data <- pullData(pl, "New Mexico Public Employees Retirement Association")# (2002-2019)
-#reason.data <- pullData(pl, "Teachers’ Retirement System of Louisiana")# (2002-2019)
-#reason.data <- pullData(pl, "Arizona Public Safety Personnel Retirement System") (2002-2019)
-#reason.data <- pullData(pl, "Georgia Teachers Retirement System")# (2002-2018)
-
-#### Create a list of all Gain/Loss columns we have ####
-
-reason.data <- data.table(reason.data)
-#reason.data <- reason.data[,lapply(.SD,function(x){ifelse(is.na(x),0,x)})]
-#View(reason.data)
-## Make sure all column numbers are numeric
-reason.data[,4:(length(reason.data)-1)] <- data.table(reason.data[,4:(length(reason.data)-1)]) %>% dplyr::mutate_all(as.numeric)
-reason.data$year <- as.numeric(reason.data$year)
-#View(reason.data)
-
-#### Add Net Amortization ####
-#(Interest on Debt + Amortization Payments)
-#Code alternative way>> 
-#Amo. contribution % * Future Payroll
-
-####### Estimate Future Payroll
-future.payroll <- reason.data[year >= fiscal_year_of_contribution[1]]$covered_payroll_dollar
-future.payroll <- t(cbind(t(future.payroll),reason.data[year == 2020]$covered_payroll_dollar*(1+0.03)))#Use assumed payroll growth rate
-reason.data$payroll2 <- future.payroll
-
-### Calculating Total Normal Cost $ amount
-reason.data$total_nc <-
-reason.data$total_normal_cost_percentage * reason.data$covered_payroll_dollar
-
-
-######################
-####### BARPLOT ######
-######################
-
-barPlot <- function (data = NULL, net.amo = FALSE, contributions = FALSE, 
-  compound.gl = TRUE, gl.url = "https://raw.githubusercontent.com/ReasonFoundation/GraphicsR/master/PERSI_GL2.csv", 
-  str = 25, stochastic = FALSE, stochastic.url = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/perctest2.csv", 
-  stochastic.alpha = 0.4, Ymax = 25, Ymin = 0, Ybreak = 5, 
-  yaxisScale = 1/1e+09, interactive = FALSE, font = "Calibri", 
-  lab1 = "Investment Experience", lab2 = "Benefit Changes", 
-  lab3 = "Changes to Actuarial Methods & Assumptions", lab4 = "Deviations from Demographic Assumptions", 
-  lab5 = "Negative Amortization", lab6 = "Gains From Pay Increases Not Given", 
-  lab7 = "Net Change to Unfunded Liability", lab8 = NULL, 
-  lab9 = NULL) 
-{
-  if (!is.null(data)) {
-    reason.data <- data
-  }
-  plotTheme <- ggplot2::theme(panel.grid.major = element_blank(), 
-    panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), 
-    plot.margin = margin(0.5, 0.5, 0, 0, "cm"), axis.text.y = element_text(size = 12, 
-      color = "black"), axis.text.x = element_text(size = 12, 
-      color = "black", angle = 0, hjust = 0.5, vjust = -1), 
-    axis.title = element_text(size = 12, face = "bold"), 
-    legend.text = element_text(size = 12), legend.title = element_blank(), 
-    text = element_text(family = "Calibri"))
-  if (isTRUE(net.amo)) {
-    if (is_null(reason.data$interest_on_debt_dollar)) {
-      reason.data$interest_on_debt_dollar <- 0
-      n <- length(reason.data$interest_on_debt_dollar)
-      for (i in (1:n)) {
-        reason.data$interest_on_debt_dollar[i] <- (reason.data$unfunded_actuarially_accrued_liabilities_dollar[i] + 
-          reason.data$total_nc[i]) * reason.data$investment_return_assumption_for_gasb_reporting[i] - 
-          (reason.data$total_contribution_dollar[i] * 
-            reason.data$investment_return_assumption_for_gasb_reporting[i]) * 
-            0.5
-      }
-    }
-    reason.data$total_amortization_payment_percentage <- as.numeric(reason.data$total_amortization_payment_percentage)
-    reason.data$payroll2 <- as.numeric(reason.data$payroll2)
-    reason.data$interest_on_debt_dollar <- as.numeric(reason.data$interest_on_debt_dollar)
-    reason.data$net.amo <- 0
-    reason.data$amo.payments <- 0
-    reason.data$amo.payments <- if (sum(reason.data$amortization_payment_total_amount) != 
-      0) {
-      reason.data$amortization_payment_total_amount
-    }
-    else {
-      reason.data$total_amortization_payment_percentage * 
-        reason.data$payroll2
-    }
-    reason.data$net.amo <- as.numeric(reason.data$amo.payments - 
-      reason.data$interest_on_debt_dollar)
-    reason.data <- data.table(reason.data %>% select(year, 
-      interest_on_debt_dollar, amo.payments, net.amo))
-    reason.data$over <- ifelse(reason.data$net.amo > 0, 
-      reason.data$net.amo, NA)
-    reason.data$net.amo <- ifelse(reason.data$net.amo < 
-      0, reason.data$net.amo, NA)
-    reason.data <- data.table(reason.data)
-    colnames(reason.data) <- c("year", "Interest Accrued on Unfunded Liabilities", 
-      "Unfunded Liability Payments", "Negative Amo.", 
-      "Positive Amo.")
-    reason.data <- melt(reason.data, vars = "net.amo")
-    reason.data <- data.frame(reason.data[21:100, ])
-    x <- data.table(seq(2001, 2020, by = 1))
-    x <- rbind(x, x, x, x)
-    reason.data <- cbind(x, reason.data)
-    reason.data <- data.frame(reason.data)
-    graph <- ggplot(reason.data, aes(x = V1, y = value, 
-      fill = variable)) + geom_bar(stat = "identity", 
-      position = position_dodge(width = 0.9), width = 0.8) + 
-      theme(panel.grid.major.y = element_line(colour = "white", 
-        size = 3)) + scale_y_continuous(labels = function(x) paste0("$", 
-      x/yaxisScale), name = if (isTRUE(net.amo)) {
-      "Unfunded Liability Payments (in $Millions)"
-    }
-    else {
-      "Employer Contributions v. ADC (in $Millions)"
-    }, breaks = seq(Ymin, Ymax, by = Ybreak), limits = c(Ymin, 
-      Ymax), expand = c(0, 0)) + ggplot2::geom_hline(yintercept = 0, 
-      color = "black") + scale_fill_manual(values = c(palette_reason$SatBlue, 
-      palette_reason$SpaceGrey, palette_reason$Red, palette_reason$Green)) + 
-      ggplot2::theme(axis.ticks.x = element_line(size = 0.5, 
-        color = "black")) + ggplot2::theme(axis.ticks.y = element_line(size = 0.5, 
-      color = "black")) + scale_x_continuous(labels = function(x) paste0(x, 
-      ""), name = "", breaks = seq(2000, 2021, by = 2), 
-      limits = c(2000, 2021), expand = c(0, 0)) + theme_bw() + 
-      plotTheme + theme(axis.line = element_line(), panel.grid.major = element_blank(), 
-      panel.grid.minor = element_blank(), panel.border = element_blank(), 
-      panel.background = element_blank()) + theme(legend.position = c(0.25, 
-      0.8))
-  }
-  else if (isTRUE(contributions)) {
-    reason.data <- reason.data %>% select(year, actuarially_required_contribution_dollar, 
-      actuarially_required_contribution_paid_percentage, 
-      employer_contribution_regular_dollar)
-    reason.data <- reason.data %>% transmute(year = year, 
-      adec = actuarially_required_contribution_dollar, 
-      adec_paid = actuarially_required_contribution_dollar * 
-        actuarially_required_contribution_paid_percentage, 
-      adec_unpaid = actuarially_required_contribution_dollar - 
-        (actuarially_required_contribution_dollar * 
-          actuarially_required_contribution_paid_percentage))
-    reason.data <- data.frame(reason.data)
-    graph <- ggplot(reason.data) + geom_col(aes(x = year, 
-      y = adec, fill = "Contributions Not Made"), position = "stack") + 
-      geom_col(aes(x = year, y = ifelse((adec_paid > adec), 
-        adec_paid, 0), fill = "Excess Contributions"), 
-        position = "stack") + geom_col(aes(x = year, 
-      y = ifelse((adec_paid <= adec), adec_paid, adec), 
-      fill = "Actual Contributions"), position = "stack") + 
-      geom_line(aes(x = year, y = adec, color = "Actuarially Determined Contribution"), 
-        fill = palette_reason$Yellow, size = 1) + theme(panel.grid.major.y = element_line(colour = "white", 
-      size = 3)) + scale_y_continuous(labels = function(x) paste0("$", 
-      x/yaxisScale), name = if (isTRUE(net.amo)) {
-      "Unfunded Liability Payments (in $Millions)"
-    }
-    else {
-      "Employer Contributions v. ADC (in $Millions)"
-    }, breaks = seq(Ymin, Ymax, by = Ybreak), limits = c(Ymin, 
-      Ymax), expand = c(0, 0)) + scale_fill_manual(values = c(palette_reason$SpaceGrey, 
-      palette_reason$Red, palette_reason$Green, palette_reason$Yellow)) + 
-      scale_color_manual(values = c(palette_reason$Yellow)) + 
-      ggplot2::theme(axis.ticks.x = element_line(size = 0.5, 
-        color = "black")) + ggplot2::theme(axis.ticks.y = element_line(size = 0.5, 
-      color = "black")) + scale_x_continuous(labels = function(x) paste0(x, 
-      ""), name = "", breaks = seq(2000, 2021, by = 2), 
-      limits = c(2001, 2021), expand = c(0, 0)) + theme_bw() + 
-      plotTheme + theme(axis.line = element_line(), panel.grid.major = element_blank(), 
-      panel.grid.minor = element_blank(), panel.border = element_blank(), 
-      panel.background = element_blank()) + theme(legend.position = c(0.25, 
-      0.8))
-  }
-  else if (isTRUE(stochastic)) {
-    data_perc <- read_csv(url(stochastic.url), col_names = TRUE, 
-      na = c(""), skip_empty_rows = TRUE, col_types = NULL)
-    data_perc <- data.frame(data_perc)
-    data_perc[, c(1:8)] <- sapply(data_perc[, c(1:8)], as.numeric)
-    data_perc[, 2:8] <- data_perc[, 2:8] * 100
-    data_perc <- data.frame(data_perc)
-    graph <- ggplot(data_perc, aes(x = year, y = X25perc)) + 
-      geom_col(aes(x = year, y = X75perc, fill = "Range of Reasonable Outcomes"), 
-        alpha = stochastic.alpha) + geom_col(aes(x = year, 
-      y = X25perc), fill = "white") + geom_line(aes(x = year, 
-      y = X50perc, color = "Median"), size = 2) + scale_fill_manual(values = c(palette_reason$DarkBlue, 
-      "white", palette_reason$Orange)) + theme(panel.grid.major.y = element_line(colour = "white", 
-      size = 3)) + scale_y_continuous(labels = function(x) paste0(x, 
-      "%"), breaks = seq(Ymin, Ymax, by = Ybreak), limits = c(Ymin, 
-      Ymax), name = "Employer Contribution, ADC Basis (% of Payroll)", 
-      expand = c(0, 0)) + scale_color_manual(values = c(palette_reason$Orange)) + 
-      ggplot2::theme(axis.ticks.x = element_line(size = 0.5, 
-        color = "black")) + ggplot2::theme(axis.ticks.y = element_line(size = 0.5, 
-      color = "black")) + scale_x_continuous(labels = function(x) paste0(x, 
-      ""), name = "", breaks = seq(2020, 2051, by = 2), 
-      limits = c(2020, 2051), expand = c(0, 0)) + theme_bw() + 
-      plotTheme + theme(axis.line = element_line(), panel.grid.major = element_blank(), 
-      panel.grid.minor = element_blank(), panel.border = element_blank(), 
-      panel.background = element_blank()) + theme(legend.position = c(0.25, 
-      0.8))
-  }
-  else if (isTRUE(compound.gl)) {
-    urlfile = gl.url
-    data <- read_csv(url(urlfile), col_names = TRUE, na = c(""), 
-      skip_empty_rows = TRUE, col_types = NULL)
-    data <- as.data.table(data)
-    data <- data %>% replace(is.na(.), 0)
-    data <- data.frame(data)
-    data2 <- data.frame(data)
-    #View(data2)
-    for (i in (2:(length(data[, 1])))) {
-      data2[i, 2:length(data)] <- data2[i, 2:length(data)] + 
-        data2[(i - 1), 2:length(data)]
-    }
-   
-    data2 <- data.table(data2 %>% mutate_all(as.numeric))
-    reason.data <- data.frame(data2)
-
-    colnames(reason.data) <- c("year", lab1, lab2, lab3, 
-      lab4, lab5, lab6, if (!is_null(lab7)) {
-        paste(lab7)
-      }, if (!is_null(lab8)) {
-        paste(lab8)
-      }, if (!is_null(lab9)) {
-        paste(lab9)
-      })
-    names <- colnames(reason.data)
-    graph <- ggplot(reason.data) + geom_col(aes(x = year, 
-      y = reason.data[, 2] * yaxisScale, fill = str_wrap(as.character(names[2]), 
-        str)), position = "stack") + geom_col(aes(x = year, 
-      y = reason.data[, 3] * yaxisScale, fill = str_wrap(as.character(names[3]), 
-        str)), position = "stack") + geom_col(aes(x = year, 
-      y = reason.data[, 4] * yaxisScale, fill = str_wrap(as.character(names[4]), 
-        str)), position = "stack") + geom_col(aes(x = year, 
-      y = reason.data[, 5] * yaxisScale, fill = str_wrap(as.character(names[5]), 
-        str)), position = "stack") + geom_col(aes(x = year, 
-      y = reason.data[, 6] * yaxisScale, fill = str_wrap(as.character(names[6]), 
-        str)), position = "stack") + geom_line(aes(x = year, 
-      y = reason.data[, length(names)] * yaxisScale, color = str_wrap(paste(last(names)), 
-        str)), size = 1.25) + ggplot2::geom_hline(yintercept = 0, 
-      color = "black") + scale_fill_manual(values = c(palette_reason$LightRed, 
-      palette_reason$Orange, palette_reason$LightOrange, 
-      palette_reason$Green, palette_reason$Red, palette_reason$Yellow, 
-      palette_reason$SatBlue)) + scale_color_manual(values = c("black")) + 
-      theme_bw() + plotTheme + theme(axis.line = element_line(), 
-      panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
-      panel.border = element_blank(), panel.background = element_blank()) + 
-      theme(legend.position = "right") + theme(legend.title = element_blank()) + 
-      labs(x = element_blank(), y = "Compound Unfunded Actuarial Liability (in $ Billions)") + 
-      ggplot2::scale_x_continuous(breaks = seq(min(reason.data$year), 
-        max(reason.data$year), by = 2), expand = c(0, 
-        0)) + ggplot2::scale_y_continuous(labels = function(x) paste0("$", 
-      x), breaks = seq(Ymin, Ymax, by = Ybreak), limits = c(Ymin, 
-      Ymax), expand = c(0, 0)) + if (!is.null(lab7)) {
-      geom_col(aes(x = year, y = reason.data[, 7] * yaxisScale, 
-        fill = str_wrap(as.character(names[7]), str)), 
-        position = "stack")
-    }
-    else if (!is.null(lab7) & !is.null(lab8)) {
-      geom_col(aes(x = year, y = reason.data[, 7] * yaxisScale, 
-        fill = str_wrap(as.character(names[7]), str)), 
-        position = "stack") + geom_col(aes(x = year, 
-        y = reason.data[, 8] * yaxisScale, fill = str_wrap(as.character(names[8]), 
-          str)), position = "stack")
-    }
-    else if (!is.null(lab7) & !is.null(lab8) & !is.null(lab9)) {
-      geom_col(aes(x = year, y = reason.data[, 7] * yaxisScale, 
-        fill = str_wrap(as.character(names[7]), str)), 
-        position = "stack") + geom_col(aes(x = year, 
-        y = reason.data[, 8] * yaxisScale, fill = str_wrap(as.character(names[8]), 
-          str)), position = "stack") + geom_col(aes(x = year, 
-        y = reason.data[, 9] * yaxisScale, fill = str_wrap(as.character(names[9]), 
-          str)), position = "stack")
-    }
-  }
-  if (isTRUE((interactive))) {
-    graph <- ggplotly(graph)
-  }
-  graph
-}
-
-
-
-stochastic <- barPlot(
-  data = NULL, 
-  net.amo = FALSE, 
-  contributions = FALSE, 
-  compound.gl = FALSE,
-  gl.url = "https://raw.githubusercontent.com/ReasonFoundation/GraphicsR/master/PERSI_GL2.csv",
-  str = 25,
-  stochastic = TRUE, 
-  stochastic.url = "https://raw.githubusercontent.com/ReasonFoundation/databaseR/master/files/perctest2.csv",
-  Ymax = 26,
-  Ymin = 0,
-  Ybreak = 2,
-  yaxisScale = 1/1000000000, 
-  stochastic.alpha = 0.4,
-  interactive = FALSE,
-  lab1 = "Investment Experience", 
-  lab2 = "Benefit Changes",
-  lab3 = "Changes to Actuarial Methods & Assumptions",
-  lab4 = "Deviations from Demographic Assumptions",
-  lab5 = "Negative Amortization",
-  lab6 = "Gains From Pay Increases Not Given",
-  lab7 = "Net Change to Unfunded Liability",
-  lab8 = NULL,
-  lab9 = NULL)
-
-stochastic
-```
-
 ### 30-Year Funded Ratio Forecast - Statutory (Assumed) w/ R (barPlot())
 
 ```{r stochasticFR, dpi=400, echo = FALSE, fig.cap = "Source: Pension Integrity Project actuarial forecast of SCRS.", fig.width=8, fig.height=5, fig.align = "center", message=FALSE, warning=FALSE}
@@ -3899,7 +3510,7 @@ barPlot <- function (data = NULL, net.amo = FALSE, contributions = FALSE,
     data_perc[, 2:4] <- data_perc[, 2:4] * 100
     colnames(data_perc)[1] <- "year"
     data_perc <- data.frame(data_perc)
-    View(data_perc)
+
     graph <- ggplot(data_perc, aes(x = year, y = `X25`)) + 
       geom_col(aes(x = year, y = `X75`, fill = "Range of Reasonable Outcomes"), 
         alpha = stochastic.alpha) + 
