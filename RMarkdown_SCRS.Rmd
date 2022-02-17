@@ -2824,6 +2824,8 @@ colnames(DPF.data) <- c("year",
 DPF.data <- DPF.data %>% select("year",
                         "assumption", "model",
                          "2crises","crisis")
+DPF.data$model[26:34] <- 0
+#View(DPF.data$model[26:34])
 
 linePlot <- function (data, title = NULL, caption = FALSE, grid = FALSE, 
   treasury = FALSE, inv.returns = TRUE, ticks = TRUE, font = NULL, 
